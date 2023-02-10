@@ -1,0 +1,26 @@
+﻿<Window x:Class="MQTT_Subscriber.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MQTT_Subscriber"
+        mc:Ignorable="d"
+        Title="MQTT Subscriber" Height="800" Width="500"
+        Closing="Window_Closing"
+        >
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <ListBox Grid.Row="0" Grid.Column="0" ItemsSource="{Binding _messages_recus, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+        <Image Grid.Row="0" Grid.Column="1" Source="{Binding _bmp, UpdateSourceTrigger=PropertyChanged}" RenderOptions.BitmapScalingMode="Fant" />
+        <Image Grid.Row="1" Grid.Column="0" Source="{Binding _bmp_webcam, UpdateSourceTrigger=PropertyChanged}" RenderOptions.BitmapScalingMode="Fant" />
+        <Image Grid.Row="1" Grid.Column="1" Source="{Binding _bmp_folder, UpdateSourceTrigger=PropertyChanged}" RenderOptions.BitmapScalingMode="Fant" />
+    </Grid>
+</Window>
