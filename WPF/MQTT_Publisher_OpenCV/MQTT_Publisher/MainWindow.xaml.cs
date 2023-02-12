@@ -1,30 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Configuration;
 using System.IO;
-using System.Linq;
-using System.Runtime.Intrinsics.X86;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Markup;
 using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using CompactExifLib;
 using MQTT_Publisher_OpenCV.Properties;
 using MQTTnet;
 using OpenCvSharp;
-using static System.Net.Mime.MediaTypeNames;
-using static System.Net.WebRequestMethods;
 
 namespace MQTT_Publisher
 {

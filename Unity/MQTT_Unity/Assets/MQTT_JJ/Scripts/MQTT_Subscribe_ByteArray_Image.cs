@@ -7,6 +7,8 @@ public class MQTT_Subscribe_ByteArray_Image : MQTT_JJ
     [SerializeField] RawImage rawimage;
     RectTransform rect;
 
+    Vector2 initialsize;
+
     public int val;
     int val_tot = 0;
     int nval = 0;
@@ -20,6 +22,7 @@ public class MQTT_Subscribe_ByteArray_Image : MQTT_JJ
     {
         base.Start();
         rect = rawimage.gameObject.GetComponent<RectTransform>();
+        initialsize = new Vector2(rect.sizeDelta.x, rect.sizeDelta.y);
         t = Time.time;
         nextT = t + p;
     }
@@ -60,9 +63,9 @@ public class MQTT_Subscribe_ByteArray_Image : MQTT_JJ
 
             //resize
             if (tex.height < tex.width)
-                rect.sizeDelta = new Vector2(1, (float)tex.height / tex.width);
+                rect.sizeDelta = new Vector2(initialsize.x, initialsize.y*(float)tex.height / tex.width);
             else
-                rect.sizeDelta = new Vector2((float)tex.width / tex.height, 1);
+                rect.sizeDelta = new Vector2(initialsize.x*(float)tex.width / tex.height, initialsize.y);
         }
 
         //vital !
