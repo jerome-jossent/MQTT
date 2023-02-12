@@ -1,0 +1,221 @@
+﻿<Window x:Class="MQTT_Publisher.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MQTT_Publisher"
+        mc:Ignorable="d"
+        Title="MQTT PUBLISH OPENCV" Height="400" Width="550"
+        Closing="Window_Closing"
+        >
+    <Grid Margin="5">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="5"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!--PARAMETRES-->
+        <Grid Grid.Row="0" Grid.Column="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="auto"/>
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" >
+                <Grid Margin="3">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="150"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Broker IP"/>
+                    <!--<TextBox Grid.Column="1" x:Name="_tbx_ip" Text="127.0.0.1"/>-->
+
+                    <ComboBox Grid.Column="1" x:Name="_cbx_ips" IsEditable="True" />
+
+                </Grid>
+                <Grid Margin="3">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="150"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Broker port"/>
+                    <TextBox Grid.Column="1" x:Name="_tbx_port" Text="1883"/>
+                </Grid>
+            </StackPanel>
+
+            <Image Grid.Column="1" Width="50" RenderOptions.BitmapScalingMode="Fant" Source="/Resources/device_disconnect.png" MouseDown="Connect_Click" x:Name="btn_connect" />
+            <Image Grid.Column="1" Width="50" RenderOptions.BitmapScalingMode="Fant" Source="/Resources/device_connect.png" MouseDown="Disconnect_Click" x:Name="btn_disconnect" Visibility="Hidden"/>
+
+            <Ellipse Grid.Column="2" Margin="5" Width="20" Height="20" x:Name="_ell_connection_status" />
+        </Grid>
+
+        <Separator Grid.Row="1"/>
+
+        <!--PUBLISH CASES-->
+        <StackPanel Grid.Row="2">
+            <!--Texte-->
+            <Grid Margin="3">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="texte/json"/>
+                <TextBox Grid.Column="1" Text="COUCOU :)" x:Name="tbx_text"/>
+                <CheckBox Grid.Column="2" x:Name="ckx_text" VerticalAlignment="Center" ToolTip="Retain"/>
+                <Button Grid.Column="3" Content="Publish" Click="Publish_texte_Click"/>
+            </Grid>
+            <!--BOOL-->
+            <Grid Margin="3">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="bool"/>
+                <CheckBox Grid.Column="1" x:Name="ckb_booleen" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                <CheckBox Grid.Column="2" x:Name="ckx_booleen" VerticalAlignment="Center" ToolTip="Retain"/>
+                <Button Grid.Column="3" Content="Publish" Click="Publish_bool_Click"/>
+            </Grid>
+            <!--Entier-->
+            <Grid Margin="3">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="entier"/>
+                <TextBox Grid.Column="1" Text="456" x:Name="tbx_entier"/>
+                <CheckBox Grid.Column="2" x:Name="ckx_entier" VerticalAlignment="Center" ToolTip="Retain"/>
+                <Button Grid.Column="3" Content="Publish" Click="Publish_entier_Click"/>
+            </Grid>
+            <!--Virgule-->
+            <Grid Margin="3">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="nbr virgule"/>
+                <TextBox Grid.Column="1" Text="897.244" x:Name="tbx_virgule"/>
+                <CheckBox Grid.Column="2" x:Name="ckx_virgule" VerticalAlignment="Center" ToolTip="Retain"/>
+                <Button  Grid.Column="3" Content="Publish" Click="Publish_virgule_Click"/>
+            </Grid>
+
+            <Grid Margin="3">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="60"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="nbr virgule"/>
+                <Slider Grid.Column="1" Minimum="-1000" Maximum="1000" Value="666" ValueChanged="Slider_ValueChanged"/>
+                <!--<TextBlock Grid.Column="2" Text="897.244" HorizontalAlignment="Center" x:Name="tbk_virgule" />-->                
+            </Grid>
+
+            <Separator/>
+            
+            <!--Image-->
+            <Grid Margin="3">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="Image"/>
+                <TextBox Grid.Column="1" Text="D:\Mes Images\Pokemon - Dracaufeu.jpg" x:Name="tbx_image"/>
+                <CheckBox Grid.Column="2" x:Name="ckx_image" VerticalAlignment="Center" ToolTip="Retain"/>
+                <Button Grid.Column="3" Content="Publish" Click="Publish_image_Click"/>
+            </Grid>
+
+            <!--Image BIS-->
+            <Grid Margin="3">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="Image"/>
+                <TextBox Grid.Column="1" Text="D:\Mes Images\Pokemon - Dracaufeu vs Dracaufeu noir.jpg" x:Name="tbx_imageBIS"/>
+                <CheckBox Grid.Column="2" x:Name="ckx_imageBIS" VerticalAlignment="Center" ToolTip="Retain"/>
+                <Button Grid.Column="3" Content="Publish" Click="Publish_imageBIS_Click"/>
+            </Grid>
+
+
+            <!--GeoImage-->
+            <Grid Margin="3">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="GeoImage"/>
+                <TextBox Grid.Column="1" Text="C:\PortiK\Debug_2023-01-17 a\138786156255_186997.jpg"  x:Name="tbx_geoimage"/>
+                <CheckBox Grid.Column="2" x:Name="ckx_geoimage" VerticalAlignment="Center" ToolTip="Retain"/>
+                <Button Grid.Column="3" Content="Publish" Click="Publish_geoimage_Click"/>
+            </Grid>
+            
+            <Separator/>
+            
+            <!--Webcam-->
+            <Grid Margin="3">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="Webcam"/>
+                <CheckBox Grid.Column="2" x:Name="ckx_webcam" VerticalAlignment="Center" ToolTip="Retain"/>
+                <Button Grid.Column="3" Content="Publish" Click="Publish_fluximage_webcam_Click"/>
+            </Grid>
+            
+            <!--Webcam as GeoImage-->
+            <Grid Margin="3" IsEnabled="False">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="Webcam as GeoImage"/>
+                <Button Grid.Column="3" Content="Publish" Click="Publish_fluximage_webcam_Click"/>
+            </Grid>
+            
+            <Separator/>
+            
+            <!--From Folder-->
+            <Grid Margin="3" IsEnabled="False">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="FromFolder"/>
+                <CheckBox Grid.Column="2" x:Name="ckx_fluximage_folder" VerticalAlignment="Center" ToolTip="Retain"/>
+                <Button Grid.Column="3" Content="Publish" Click="Publish_fluximage_folder_Click"/>
+            </Grid>
+            
+            <!--Tout-->
+            <Grid Margin="3">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="TOUT"/>
+                <Button Grid.Column="2" Content="Publish" Click="Publish_all_Click"/>
+            </Grid>
+        </StackPanel>
+    </Grid>
+</Window>
