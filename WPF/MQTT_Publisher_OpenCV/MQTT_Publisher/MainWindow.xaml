@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MQTT_Publisher"
         mc:Ignorable="d"
-        Title="MQTT PUBLISH OPENCV" Height="400" Width="550"
+        Title="MQTT PUBLISH OPENCV" Height="500" Width="550"
         Closing="Window_Closing"
         >
     <Grid Margin="5">
@@ -164,6 +164,33 @@
                 <Button Grid.Column="3" Content="Publish" Click="Publish_geoimage_Click"/>
             </Grid>
             
+            <Separator/>
+
+            <!--Vector3-->
+            <Grid Margin="3">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="Vector3"/>
+
+                <StackPanel Grid.Column="1" Orientation="Vertical">
+                    <TextBox Text="2" x:Name="tbx_vector3_x"/>
+                    <TextBox Text="-5" x:Name="tbx_vector3_y"/>
+                    <TextBox Text="3" x:Name="tbx_vector3_z"/>
+                </StackPanel>
+
+                <Rectangle Grid.Column="2" Fill="Green" Height="50" Width="50" MouseMove="xy_move" x:Name="xy" />
+                <Rectangle Grid.Column="3" Fill="Red" Height="50" Width="50" MouseMove="xz_move" x:Name="xz" />
+
+                <CheckBox Grid.Column="4" x:Name="ckx_vector3" VerticalAlignment="Center" ToolTip="Retain"/>
+                <Button Grid.Column="5" Content="Publish" Click="Publish_vector3_Click"/>
+            </Grid>
+
             <Separator/>
             
             <!--Webcam-->

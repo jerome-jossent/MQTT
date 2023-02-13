@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,7 +19,7 @@ namespace MQTT_Publisher
     {
         MQTTnet.Client.IMqttClient mqttClient;
 
-        enum typetopic { texte, booleen, entier, virgule, image, fluximages_webcam, fluximages_folder, geoimage };
+        enum typetopic { texte, booleen, entier, virgule, image, fluximages_webcam, fluximages_folder, geoimage, vector3 };
         Dictionary<typetopic, string> topics;
 
         bool webcam_running;
@@ -70,6 +71,9 @@ namespace MQTT_Publisher
         void Publish_all_Click(object sender, RoutedEventArgs e) { Publish_all(); }
 
         private void Publish_geoimage_Click(object sender, RoutedEventArgs e) { Publish_geoimage(); }
+
+
+        private void Publish_vector3_Click(object sender, RoutedEventArgs e) { Publish_vector3(); }
         #endregion
 
         void INIT_topics()
@@ -83,6 +87,7 @@ namespace MQTT_Publisher
             topics.Add(typetopic.fluximages_webcam, "fluximages_webcam");
             topics.Add(typetopic.fluximages_folder, "fluximages_folder");
             topics.Add(typetopic.geoimage, "geoimage");
+            topics.Add(typetopic.vector3, "vector3");
         }
 
         void Publish_texte() { MQTT_Publish(topics[typetopic.texte], tbx_text.Text, ckx_text.IsChecked == true); }
@@ -94,7 +99,6 @@ namespace MQTT_Publisher
             if (!this.IsLoaded) return;
             tbx_virgule.Text = newValue.ToString("0.00");
             Publish_virgule();
-            //MQTT_Publish(topics[typetopic.virgule], tbx_virgule.Text, ckx_virgule.IsChecked == true);
         }
 
         void Publish_image()
@@ -138,6 +142,82 @@ namespace MQTT_Publisher
 
             MQTT_Publish(topics[typetopic.geoimage], jsondata);
         }
+
+        void Publish_vector3(float x, float y, float z)
+        {
+            byte[] data = CombomBinaryArray(BitConverter.GetBytes(x), BitConverter.GetBytes(y), BitConverter.GetBytes(z));
+            MQTT_Publish(topics[typetopic.vector3], data, ckx_virgule.IsChecked == true);
+        }
+        void Publish_vector3()
+        {
+            float x = float.Parse(tbx_vector3_x.Text);
+            float y = float.Parse(tbx_vector3_y.Text);
+            float z = float.Parse(tbx_vector3_z.Text);
+            Publish_vector3(x, y, z);
+        }
+        private byte[] CombomBinaryArray(byte[] srcArray1, byte[] srcArray2)
+        {
+            //Create a new array based on the total number of two array elements to be merged
+            byte[] newArray = new byte[srcArray1.Length + srcArray2.Length];
+
+            //Copy the first array to the newly created array
+            Array.Copy(srcArray1, 0, newArray, 0, srcArray1.Length);
+
+            //Copy the second array to the newly created array
+            Array.Copy(srcArray2, 0, newArray, srcArray1.Length, srcArray2.Length);
+
+            return newArray;
+        }
+
+        private byte[] CombomBinaryArray(byte[] srcArray1, byte[] srcArray2, byte[] srcArray3)
+        {
+            //Create a new array based on the total number of two array elements to be merged
+            byte[] newArray = new byte[srcArray1.Length + srcArray2.Length + srcArray3.Length];
+
+            //Copy the first array to the newly created array
+            Array.Copy(srcArray1, 0, newArray, 0, srcArray1.Length);
+            //Copy the second array to the newly created array
+            Array.Copy(srcArray2, 0, newArray, srcArray1.Length, srcArray2.Length);
+            //Copy the third array to the newly created array
+            Array.Copy(srcArray3, 0, newArray, srcArray1.Length + srcArray2.Length, srcArray3.Length);
+
+            return newArray;
+        }
+
+
+
+        private void xy_move(object sender, MouseEventArgs e)
+        {
+            if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                var xy_point = e.GetPosition(xy);
+
+                float x = (float)(xy_point.X / xy.Width) * 2 - 1;
+                float y = 1 - (float)(xy_point.Y / xy.Height) * 2;
+
+                tbx_vector3_x.Text = x.ToString();
+                tbx_vector3_y.Text = y.ToString();
+
+                Publish_vector3(x, y, float.Parse(tbx_vector3_z.Text));
+            }
+        }
+
+        private void xz_move(object sender, MouseEventArgs e)
+        {
+            if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                var xz_point = e.GetPosition(xz);
+
+                float x = (float)(xz_point.X / xy.Width) * 2 - 1;
+                float z = 1 - (float)(xz_point.Y / xy.Height) * 2;
+
+                tbx_vector3_x.Text = x.ToString();
+                tbx_vector3_z.Text = z.ToString();
+
+                Publish_vector3(x, float.Parse(tbx_vector3_y.Text), z);
+            }
+        }
+
 
         #region WEBCAM
         // Define the cancellation token.
