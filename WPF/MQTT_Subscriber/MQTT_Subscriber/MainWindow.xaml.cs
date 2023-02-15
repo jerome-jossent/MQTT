@@ -24,16 +24,18 @@ using System.Drawing;
 using Image = System.Drawing.Image;
 using CompactExifLib;
 using System.Drawing.Imaging;
+using System.Diagnostics;
+using System.Numerics;
 
 namespace MQTT_Subscriber
 {
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
         MQTTnet.Client.IMqttClient mqttClient;
-        string IP = "127.0.0.1";
+        string IP = "35.210.193.228";   //"127.0.0.1";
         int port = 1883;
 
-        enum typetopic { texte, booleen, entier, virgule, image, fluximages_webcam, fluximages_folder, geoimage };
+        enum typetopic { texte, booleen, entier, virgule, image, fluximages_webcam, fluximages_folder, geoimage, vector3 };
         Dictionary<typetopic, string> topics;
 
 
@@ -113,6 +115,7 @@ namespace MQTT_Subscriber
             topics.Add(typetopic.fluximages_webcam, "fluximages_webcam");
             topics.Add(typetopic.fluximages_folder, "fluximages_folder");
             topics.Add(typetopic.geoimage, "geoimage");
+            topics.Add(typetopic.vector3, "vector3");
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -179,46 +182,50 @@ namespace MQTT_Subscriber
         }
         #endregion
 
+        void AddToMessageList(string text)
+        {
+            this.Dispatcher.BeginInvoke(DispatcherPriority.Normal, (SendOrPostCallback)delegate
+            {
+                TextBlock tb = new TextBlock() { Text = text };
+                _messages_recus.Insert(0, tb);
+
+                while (_messages_recus.Count > 200)
+                    _messages_recus.RemoveAt(200);
+            }, null);
+        }
+
+
         void ManageMessage(MQTTnet.Client.MqttApplicationMessageReceivedEventArgs arg)
         {
             string topic = arg.ApplicationMessage.Topic;
+            string txt;
             typetopic mykindOfTopic = topics.FirstOrDefault(x => x.Value == topic).Key;
             switch (mykindOfTopic)
             {
                 case typetopic.texte:
-                    this.Dispatcher.BeginInvoke(DispatcherPriority.Normal, (SendOrPostCallback)delegate
-                    {
-                        string txt = Encoding.Default.GetString(arg.ApplicationMessage.Payload);
-                        TextBlock tb = new TextBlock() { Text = txt };
-                        _messages_recus.Add(tb);
-                    }, null);
+                    txt = Encoding.Default.GetString(arg.ApplicationMessage.Payload);
+                    AddToMessageList(txt);
+                    //this.Dispatcher.BeginInvoke(DispatcherPriority.Normal, (SendOrPostCallback)delegate
+                    //{
+                    //    string txt = Encoding.Default.GetString(arg.ApplicationMessage.Payload);
+                    //    TextBlock tb = new TextBlock() { Text = txt };
+                    //    _messages_recus.Add(tb);
+                    //}, null);
                     break;
 
                 case typetopic.booleen:
-                    this.Dispatcher.BeginInvoke(DispatcherPriority.Normal, (SendOrPostCallback)delegate
-                    {
-                        string txt = Encoding.Default.GetString(arg.ApplicationMessage.Payload);
-                        TextBlock tb = new TextBlock() { Text = txt };
-                        _messages_recus.Add(tb);
-                    }, null);
+                    txt = Encoding.Default.GetString(arg.ApplicationMessage.Payload);
+                    AddToMessageList(txt);
                     break;
 
                 case typetopic.entier:
-                    this.Dispatcher.BeginInvoke(DispatcherPriority.Normal, (SendOrPostCallback)delegate
-                    {
-                        string txt = Encoding.Default.GetString(arg.ApplicationMessage.Payload);
-                        TextBlock tb = new TextBlock() { Text = txt };
-                        _messages_recus.Add(tb);
-                    }, null);
+                    txt = Encoding.Default.GetString(arg.ApplicationMessage.Payload);
+                    AddToMessageList(txt);
                     break;
 
                 case typetopic.virgule:
-                    this.Dispatcher.BeginInvoke(DispatcherPriority.Normal, (SendOrPostCallback)delegate
-                    {
-                        string txt = Encoding.Default.GetString(arg.ApplicationMessage.Payload);
-                        TextBlock tb = new TextBlock() { Text = txt };
-                        _messages_recus.Add(tb);
-                    }, null);
+                    txt = Encoding.Default.GetString(arg.ApplicationMessage.Payload);
+                    AddToMessageList(txt);
                     break;
 
                 case typetopic.image:
@@ -276,12 +283,51 @@ namespace MQTT_Subscriber
                                      geoImage.counterwindow_begin + "\n" +
                                      geoImage.counterwindow_end + "\n" +
                                      "SIZE = " + geoImage.ImageData.Length;
-                                     ;
-                        TextBlock tb = new TextBlock() { Text = txt };
-                        _messages_recus.Add(tb);
+                        ;
+                        //TextBlock tb = new TextBlock() { Text = txt };
+                        //_messages_recus.Add(tb);
+
+                        AddToMessageList(txt);
+
                     }, null);
                     break;
+
+                case typetopic.vector3:
+                    float[] vector3 = GetVector3FromByteArray(arg.ApplicationMessage.Payload);
+                    txt = "(" + vector3[0] + " ; " + vector3[1] + " ; " + vector3[2] + ")";
+                    AddToMessageList(txt);
+                    break;
+
+                default:
+                    Microsoft.VisualBasic.Interaction.MsgBox("TODO\n" + mykindOfTopic.ToString());
+
+                    break;
             }
+        }
+
+        float[] GetVector3FromByteArray(byte[] payload)
+        {
+            float[] _valeur = new float[3];
+            byte[] x_b = new byte[4];
+            byte[] y_b = new byte[4];
+            byte[] z_b = new byte[4];
+            try
+            {
+                //float : 4 octets
+                Array.Copy(payload, 0, x_b, 0, 4);
+                Array.Copy(payload, 4, y_b, 0, 4);
+                Array.Copy(payload, 8, z_b, 0, 4);
+
+                _valeur[0] = BitConverter.ToSingle(x_b, 0);
+                _valeur[1] = BitConverter.ToSingle(y_b, 0);
+                _valeur[2] = BitConverter.ToSingle(z_b, 0);
+
+            }
+            catch (Exception ex)
+            {
+
+            }
+            return _valeur;
         }
 
         public static Image ImageFromByteArray(byte[] bytes)
