@@ -26,17 +26,26 @@ using CompactExifLib;
 using System.Drawing.Imaging;
 using System.Diagnostics;
 using System.Numerics;
+using MongoDB.Driver.Core.Configuration;
+
+using MongoDB.Driver;
+using MongoDB.Bson.Serialization.Conventions;
+using MongoDB.Bson;
 
 namespace MQTT_Subscriber
 {
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
         MQTTnet.Client.IMqttClient mqttClient;
-        string IP = "35.210.193.228";   //"127.0.0.1";
+        string IP = "127.0.0.1";
         int port = 1883;
 
-        enum typetopic { texte, booleen, entier, virgule, image, fluximages_webcam, fluximages_folder, geoimage, vector3 };
+        enum typetopic { all, texte, booleen, entier, virgule, image, fluximages_webcam, fluximages_folder, geoimage, vector3 };
         Dictionary<typetopic, string> topics;
+
+        //https://www.mongodb.com/docs/drivers/csharp/current/quick-start/
+        string connectionString = "mongodb://localhost:27017/";//dans MonDBCompas, à côté icône feuille "..." → "Copy connection string"
+        MongoClient dbclient;
 
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -98,15 +107,34 @@ namespace MQTT_Subscriber
 
         void INITS()
         {
+            MongoDB_Init();
             INIT_topics();
             MQTTClient_Init();
             MQTTClient_Subscribes();
             messages_recus = new ObservableCollection<FrameworkElement>();
         }
 
+        public class TT
+        {
+            public DateTime temps;
+            public float mesure;
+        }
+
+        private async void MongoDB_Init()
+        {
+            dbclient = new MongoClient(connectionString);
+            var db = dbclient.GetDatabase("BDD_001");
+            var collection = db.GetCollection<BsonDocument>("test");
+
+            var document = new BsonDocument { { "temps", DateTime.Now }, { "mesure", (float)new Random().NextDouble() } };
+
+            await collection.InsertOneAsync(document);
+        }
+
         void INIT_topics()
         {
             topics = new Dictionary<typetopic, string>();
+            topics.Add(typetopic.all, "#");
             topics.Add(typetopic.texte, "texte");
             topics.Add(typetopic.booleen, "booleen");
             topics.Add(typetopic.entier, "entier");
@@ -202,6 +230,11 @@ namespace MQTT_Subscriber
             typetopic mykindOfTopic = topics.FirstOrDefault(x => x.Value == topic).Key;
             switch (mykindOfTopic)
             {
+                case typetopic.all:
+                    txt = Encoding.Default.GetString(arg.ApplicationMessage.Payload);
+                    AddToMessageList(topic + ":" + txt);
+                    break;
+
                 case typetopic.texte:
                     txt = Encoding.Default.GetString(arg.ApplicationMessage.Payload);
                     AddToMessageList(txt);
@@ -219,7 +252,10 @@ namespace MQTT_Subscriber
                     break;
 
                 case typetopic.entier:
-                    txt = Encoding.Default.GetString(arg.ApplicationMessage.Payload);
+                    if (arg.ApplicationMessage.Payload == null)
+                        txt = "";
+                    else
+                        txt = Encoding.Default.GetString(arg.ApplicationMessage.Payload);
                     AddToMessageList(txt);
                     break;
 

@@ -19,7 +19,7 @@ namespace MQTT_Publisher
     {
         MQTTnet.Client.IMqttClient mqttClient;
 
-        enum typetopic { texte, booleen, entier, virgule, image, fluximages_webcam, fluximages_folder, geoimage, vector3 };
+        enum typetopic { all, texte, booleen, entier, virgule, image, fluximages_webcam, fluximages_folder, geoimage, vector3 };
         Dictionary<typetopic, string> topics;
 
         bool webcam_running;
@@ -267,7 +267,7 @@ namespace MQTT_Publisher
                 Cv2.ImEncode(".jpg", frame, out byte[] data);
 
                 //publie l'image
-                MQTT_Publish(topics[typetopic.fluximages_webcam], data, ckx_webcam.IsChecked == true);
+                MQTT_Publish(topics[typetopic.fluximages_webcam], data);//, ckx_webcam.IsChecked == true);
 
                 //mesure fps
                 nbframe++;
