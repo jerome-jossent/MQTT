@@ -100,9 +100,18 @@ namespace MQTT_Publisher
         void Publish_image()
         {
             byte[] data;
+            tbx_image.Text = tbx_image.Text.Replace("\"", "");
             Mat mat = new Mat(tbx_image.Text);
-            Cv2.ImEncode(".jpg", mat, out data);
-            MQTT_Publish(topics[typetopic.image], data, ckx_image.IsChecked == true);
+            if (mat.Empty())
+            {
+                tbx_image.Background = Brushes.Red;
+            }
+            else
+            {
+                tbx_image.Background = Brushes.White;
+                Cv2.ImEncode(".jpg", mat, out data);
+                MQTT_Publish(topics[typetopic.image], data, ckx_image.IsChecked == true);
+            }
         }
 
         void Publish_imageBIS()
@@ -248,6 +257,8 @@ namespace MQTT_Publisher
             //z = new string[] { "127.0.0.1" };
             foreach (string item in z)
                 _cbx_ips.Items.Add(item);
+            if (_cbx_ips.Items.Count > 0)
+                _cbx_ips.SelectedIndex = 0;
         }
         void Save_ips()
         {
