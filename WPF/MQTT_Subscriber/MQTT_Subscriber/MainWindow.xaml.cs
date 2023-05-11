@@ -110,7 +110,8 @@ namespace MQTT_Subscriber
             topics.Add(typetopic.entier, "entier");
             topics.Add(typetopic.virgule, "virgule");
             topics.Add(typetopic.image, "image");
-            topics.Add(typetopic.fluximages_webcam, "fluximages_webcam");
+            //            topics.Add(typetopic.fluximages_webcam, "fluximages_webcam");
+            topics.Add(typetopic.fluximages_webcam, "video/frame/data");
             topics.Add(typetopic.fluximages_folder, "fluximages_folder");
             topics.Add(typetopic.geoimage, "geoimage");
         }
@@ -226,27 +227,6 @@ namespace MQTT_Subscriber
                     {
                         //réception d'un byte array d'une BitmapImage
                         _bmp = ToImage(arg.ApplicationMessage.Payload);
-
-                        //using (var ms = new MemoryStream(arg.ApplicationMessage.Payload))
-                        //{
-
-
-
-
-                        //    ExifData d = new ExifData(ms);
-
-                        //    StringBuilder sb = new StringBuilder(200000);
-                        //    PrintIfdData(sb, ExifIfd.PrimaryData, d);
-                        //    PrintIfdData(sb, ExifIfd.PrivateData, d);
-                        //    PrintIfdData(sb, ExifIfd.GpsInfoData, d);
-                        //    PrintIfdData(sb, ExifIfd.Interoperability, d);
-                        //    PrintIfdData(sb, ExifIfd.ThumbnailData, d);
-
-                        //    string lbll = sb.ToString();
-                        //    lbll = lbll;
-                        //}
-
-
                     }, null);
                     break;
 
@@ -254,6 +234,13 @@ namespace MQTT_Subscriber
                     this.Dispatcher.BeginInvoke(DispatcherPriority.Normal, (SendOrPostCallback)delegate
                     {
                         _bmp_webcam = ToImage(arg.ApplicationMessage.Payload);
+                        using (var ms = new MemoryStream(arg.ApplicationMessage.Payload))
+                        {
+                            ExifData d = new ExifData(ms);
+                            d.GetTagValue(ExifTag.UserComment, out string value, StrCoding.Utf8);
+                            if (value == null) value = "";
+                            Dispatcher.BeginInvoke(() => Title = value);
+                        }
                     }, null);
                     break;
 
@@ -276,7 +263,7 @@ namespace MQTT_Subscriber
                                      geoImage.counterwindow_begin + "\n" +
                                      geoImage.counterwindow_end + "\n" +
                                      "SIZE = " + geoImage.ImageData.Length;
-                                     ;
+                        ;
                         TextBlock tb = new TextBlock() { Text = txt };
                         _messages_recus.Add(tb);
                     }, null);
