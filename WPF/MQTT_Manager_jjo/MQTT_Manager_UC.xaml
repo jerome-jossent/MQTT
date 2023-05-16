@@ -1,0 +1,46 @@
+<UserControl x:Class="MQTT_Manager_jjo.MQTT_Manager_UC"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:MQTT_Manager_jjo"
+             mc:Ignorable="d" 
+             d:DesignHeight="70" d:DesignWidth="800"
+             Loaded="MQTT_Manager_UC_Loaded" Unloaded="MQTT_Manager_UC_Unloaded"     
+             
+             >
+    <Grid Height="50">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="auto"/>
+            <ColumnDefinition Width="auto"/>
+        </Grid.ColumnDefinitions>
+
+        <StackPanel Grid.Column="0" >
+            <Grid Margin="3">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="20"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="Broker IP"/>
+                <ComboBox Grid.Column="1" x:Name="_cbx_ips" IsEditable="True" />
+                <Image Grid.Column="2" Height="17" RenderOptions.BitmapScalingMode="Fant" Source="/MQTT_Manager_jjo;component/Resources/corbeille grise.png" MouseDown="SelectedIP_Delete_Click"  />
+            </Grid>
+
+            <Grid Margin="3">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="Broker port"/>
+                <TextBox Grid.Column="1" x:Name="_tbx_port" Text="1883"/>
+            </Grid>
+        </StackPanel>
+
+        <Image Grid.Column="1" Width="50" RenderOptions.BitmapScalingMode="Fant" Source="/MQTT_Manager_jjo;component/Resources/device_disconnect.png" MouseDown="Connect_Click" x:Name="btn_connect" />
+        <Image Grid.Column="1" Width="50" RenderOptions.BitmapScalingMode="Fant" Source="/MQTT_Manager_jjo;component/Resources/device_connect.png" MouseDown="Disconnect_Click" x:Name="btn_disconnect" Visibility="Hidden"/>
+
+        <Ellipse Grid.Column="2" Margin="5" Width="20" Height="20" x:Name="_ell_connection_status" />
+    </Grid>
+</UserControl>
