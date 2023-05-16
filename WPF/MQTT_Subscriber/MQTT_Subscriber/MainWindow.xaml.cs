@@ -6,50 +6,21 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Windows.Threading;
-using MQTTnet;
-using static System.Net.Mime.MediaTypeNames;
 
-using System.Drawing;
 using Image = System.Drawing.Image;
 using CompactExifLib;
-using System.Drawing.Imaging;
-using System.Diagnostics;
-using System.Numerics;
-using MongoDB.Driver.Core.Configuration;
-
-using MongoDB.Driver;
-using MongoDB.Bson.Serialization.Conventions;
-using MongoDB.Bson;
+using System.Runtime.CompilerServices;
 
 namespace MQTT_Subscriber
 {
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
-        MQTTnet.Client.IMqttClient mqttClient;
-        string IP = "127.0.0.1";
-        int port = 1883;
-
-        enum typetopic { all, texte, booleen, entier, virgule, image, fluximages_webcam, fluximages_folder, geoimage, vector3 };
-        Dictionary<typetopic, string> topics;
-
-        //https://www.mongodb.com/docs/drivers/csharp/current/quick-start/
-        string connectionString = "mongodb://localhost:27017/";//dans MonDBCompas, à côté icône feuille "..." → "Copy connection string"
-        MongoClient dbclient;
-
-
         public event PropertyChangedEventHandler PropertyChanged;
-        protected void OnPropertyChanged(string name = null)
+        protected void OnPropertyChanged([CallerMemberName] string name = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
@@ -60,7 +31,7 @@ namespace MQTT_Subscriber
             set
             {
                 messages_recus = value;
-                OnPropertyChanged("_messages_recus");
+                OnPropertyChanged();
             }
         }
         ObservableCollection<FrameworkElement> messages_recus;
@@ -71,32 +42,35 @@ namespace MQTT_Subscriber
             set
             {
                 bmp = value;
-                OnPropertyChanged("_bmp");
+                OnPropertyChanged();
             }
         }
         BitmapImage bmp;
 
-        public BitmapImage _bmp_webcam
-        {
-            get { return bmp_webcam; }
-            set
-            {
-                bmp_webcam = value;
-                OnPropertyChanged("_bmp_webcam");
-            }
-        }
-        BitmapImage bmp_webcam;
+        enum DataType { _boolean, _integer, _long, _float, _double, _string, _image, _image_with_metadatas, _image_with_json_in_metadata, _vector3, _color }
+        DataType dataType;
 
-        public BitmapImage _bmp_folder
-        {
-            get { return bmp_folder; }
-            set
-            {
-                bmp_folder = value;
-                OnPropertyChanged("_bmp_folder");
-            }
-        }
-        BitmapImage bmp_folder;
+        //public BitmapImage _bmp_webcam
+        //{
+        //    get { return bmp_webcam; }
+        //    set
+        //    {
+        //        bmp_webcam = value;
+        //        OnPropertyChanged("_bmp_webcam");
+        //    }
+        //}
+        //BitmapImage bmp_webcam;
+
+        //public BitmapImage _bmp_folder
+        //{
+        //    get { return bmp_folder; }
+        //    set
+        //    {
+        //        bmp_folder = value;
+        //        OnPropertyChanged("_bmp_folder");
+        //    }
+        //}
+        //BitmapImage bmp_folder;
 
         public MainWindow()
         {
@@ -105,241 +79,150 @@ namespace MQTT_Subscriber
             INITS();
         }
 
+
         void INITS()
         {
-            MongoDB_Init();
-            INIT_topics();
-            MQTTClient_Init();
-            MQTTClient_Subscribes();
+            mqtt_uc.topics_subscribed = new Dictionary<string, Action<byte[]?>>();
+            cbx_datatype.ItemsSource = Enum.GetValues(typeof(DataType)).Cast<DataType>();
             messages_recus = new ObservableCollection<FrameworkElement>();
         }
 
-        public class TT
+        void btn_subscribe_Click(object sender, RoutedEventArgs e)
         {
-            public DateTime temps;
-            public float mesure;
-        }
+            dataType = (DataType)Enum.Parse(typeof(DataType), cbx_datatype.Text);
+            string topic = tbx_topic.Text;
 
-        private async void MongoDB_Init()
-        {
-            dbclient = new MongoClient(connectionString);
-            var db = dbclient.GetDatabase("BDD_001");
-            var collection = db.GetCollection<BsonDocument>("test");
+            //unsubscribe
+            if (mqtt_uc.topics_subscribed.ContainsKey(topic) && mqtt_uc.mqttClient.IsConnected)
+                mqtt_uc.MQTTClient_Unubscribes(topic);
 
-            var document = new BsonDocument { { "temps", DateTime.Now }, { "mesure", (float)new Random().NextDouble() } };
+            //update dictionnary
+            if (mqtt_uc.topics_subscribed.ContainsKey(topic))
+                mqtt_uc.topics_subscribed[topic] = ManageIncomingData;
+            else
+                mqtt_uc.topics_subscribed.Add(topic, ManageIncomingData);
 
-            await collection.InsertOneAsync(document);
-        }
-
-        void INIT_topics()
-        {
-            topics = new Dictionary<typetopic, string>();
-            topics.Add(typetopic.all, "#");
-            topics.Add(typetopic.texte, "texte");
-            topics.Add(typetopic.booleen, "booleen");
-            topics.Add(typetopic.entier, "entier");
-            topics.Add(typetopic.virgule, "virgule");
-            topics.Add(typetopic.image, "image");
-            //            topics.Add(typetopic.fluximages_webcam, "fluximages_webcam");
-            topics.Add(typetopic.fluximages_webcam, "video/frame/data");
-            topics.Add(typetopic.fluximages_folder, "fluximages_folder");
-            topics.Add(typetopic.geoimage, "geoimage");
-            topics.Add(typetopic.vector3, "vector3");
-        }
-
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-            MQTTClient_Stop();
-        }
-
-        #region MQTT
-        //https://github.com/dotnet/MQTTnet/blob/master/Samples/Client/Client_Subscribe_Samples.cs
-
-        void MQTTClient_Init()
-        {
-            var mqttFactory = new MqttFactory();
-            mqttClient = mqttFactory.CreateMqttClient();
-
-            var mqttClientOptions = new MQTTnet.Client.MqttClientOptionsBuilder()
-                .WithTcpServer(IP, port)
-                .Build();
-
-            mqttClient.ApplicationMessageReceivedAsync += MqttClient_ApplicationMessageReceivedAsync;
-
-            mqttClient.ConnectingAsync += MqttClient_ConnectingAsync;
-            mqttClient.ConnectedAsync += MqttClient_ConnectedAsync;
-            mqttClient.DisconnectedAsync += MqttClient_DisconnectedAsync;
-            mqttClient.ConnectAsync(mqttClientOptions, System.Threading.CancellationToken.None).GetAwaiter().GetResult();
-        }
-
-        void MQTTClient_Subscribes()
-        {
-            var mqtt_Subscriber = new MQTTnet.Client.MqttClientSubscribeOptions();
-            foreach (var item in topics)
+            //force connection & subscribe
+            if (!mqtt_uc.isConnected)
+                mqtt_uc.MQTTClient_Connect();
+            else
             {
-                var filter = new MQTTnet.Packets.MqttTopicFilter() { Topic = item.Value };
-                mqtt_Subscriber.TopicFilters.Add(filter);
+                //subscribe
+                mqtt_uc.MQTTClient_Subscribes();
             }
-
-            mqttClient.SubscribeAsync(mqtt_Subscriber, System.Threading.CancellationToken.None);
         }
 
-        Task MqttClient_ConnectingAsync(MQTTnet.Client.MqttClientConnectingEventArgs arg)
+        void ManageIncomingData(byte[]? data)
         {
-            return MQTTnet.Internal.CompletedTask.Instance;
-        }
+            if (data == null) return;
 
-        Task MqttClient_ConnectedAsync(MQTTnet.Client.MqttClientConnectedEventArgs arg)
-        {
-            return MQTTnet.Internal.CompletedTask.Instance;
-        }
+            DateTime dateTime = DateTime.Now;
 
-        Task MqttClient_DisconnectedAsync(MQTTnet.Client.MqttClientDisconnectedEventArgs arg)
-        {
-            return MQTTnet.Internal.CompletedTask.Instance;
-        }
-
-        Task MqttClient_ApplicationMessageReceivedAsync(MQTTnet.Client.MqttApplicationMessageReceivedEventArgs arg)
-        {
-            ManageMessage(arg);
-            return MQTTnet.Internal.CompletedTask.Instance;
-        }
-
-        void MQTTClient_Stop()
-        {
-            mqttClient?.DisconnectAsync(new MQTTnet.Client.MqttClientDisconnectOptions()).GetAwaiter().GetResult();//.DisconnectAsync().GetAwaiter();
-        }
-        #endregion
-
-        void AddToMessageList(string text)
-        {
-            this.Dispatcher.BeginInvoke(DispatcherPriority.Normal, (SendOrPostCallback)delegate
-            {
-                TextBlock tb = new TextBlock() { Text = text };
-                _messages_recus.Insert(0, tb);
-
-                while (_messages_recus.Count > 200)
-                    _messages_recus.RemoveAt(200);
-            }, null);
-        }
-
-
-        void ManageMessage(MQTTnet.Client.MqttApplicationMessageReceivedEventArgs arg)
-        {
-            string topic = arg.ApplicationMessage.Topic;
             string txt;
-            typetopic mykindOfTopic = topics.FirstOrDefault(x => x.Value == topic).Key;
-            switch (mykindOfTopic)
+            switch (dataType)
             {
-                case typetopic.all:
-                    txt = Encoding.Default.GetString(arg.ApplicationMessage.Payload);
-                    AddToMessageList(topic + ":" + txt);
-                    break;
-
-                case typetopic.texte:
-                    txt = Encoding.Default.GetString(arg.ApplicationMessage.Payload);
-                    AddToMessageList(txt);
-                    //this.Dispatcher.BeginInvoke(DispatcherPriority.Normal, (SendOrPostCallback)delegate
-                    //{
-                    //    string txt = Encoding.Default.GetString(arg.ApplicationMessage.Payload);
-                    //    TextBlock tb = new TextBlock() { Text = txt };
-                    //    _messages_recus.Add(tb);
-                    //}, null);
-                    break;
-
-                case typetopic.booleen:
-                    txt = Encoding.Default.GetString(arg.ApplicationMessage.Payload);
+                case DataType._boolean:
+                    txt = Encoding.Default.GetString(data);
+                    bool val_bool = bool.Parse(txt);
+                    txt = val_bool.ToString();
                     AddToMessageList(txt);
                     break;
 
-                case typetopic.entier:
-                    if (arg.ApplicationMessage.Payload == null)
-                        txt = "";
-                    else
-                        txt = Encoding.Default.GetString(arg.ApplicationMessage.Payload);
+                case DataType._integer:
+                    txt = Encoding.Default.GetString(data);
+                    int val_int = int.Parse(txt);
+                    txt = val_int.ToString();
                     AddToMessageList(txt);
                     break;
 
-                case typetopic.virgule:
-                    txt = Encoding.Default.GetString(arg.ApplicationMessage.Payload);
+                case DataType._long:
+                    txt = Encoding.Default.GetString(data);
+                    long val_long = long.Parse(txt);
+                    txt = val_long.ToString();
                     AddToMessageList(txt);
                     break;
 
-                case typetopic.image:
-                    this.Dispatcher.BeginInvoke(DispatcherPriority.Normal, (SendOrPostCallback)delegate
-                    {
-                        //réception d'un byte array d'une BitmapImage
-                        _bmp = ToImage(arg.ApplicationMessage.Payload);
-                    }, null);
-                    break;
-
-                case typetopic.fluximages_webcam:
-                    this.Dispatcher.BeginInvoke(DispatcherPriority.Normal, (SendOrPostCallback)delegate
-                    {
-                        _bmp_webcam = ToImage(arg.ApplicationMessage.Payload);
-                        using (var ms = new MemoryStream(arg.ApplicationMessage.Payload))
-                        {
-                            ExifData d = new ExifData(ms);
-                            d.GetTagValue(ExifTag.UserComment, out string value, StrCoding.Utf8);
-                            if (value == null) value = "";
-                            Dispatcher.BeginInvoke(() => Title = value);
-                        }
-                    }, null);
-                    break;
-
-                case typetopic.fluximages_folder:
-                    this.Dispatcher.BeginInvoke(DispatcherPriority.Normal, (SendOrPostCallback)delegate
-                    {
-                        _bmp_folder = ToImage(arg.ApplicationMessage.Payload);
-                    }, null);
-                    break;
-
-                case typetopic.geoimage:
-                    this.Dispatcher.BeginInvoke(DispatcherPriority.Normal, (SendOrPostCallback)delegate
-                    {
-                        //réception d'un byte array d'une BitmapImage
-                        GeoImage geoImage = GeoImage.FromJson(arg.ApplicationMessage.Payload);
-                        _bmp = ToImage(geoImage.ImageData);
-                        string txt = geoImage.time + "\n" +
-                                     geoImage.dateTime.ToString("yyyy/MM/dd HH:mm:ss.fff") + "\n" +
-                                     geoImage.counterLatch + "\n" +
-                                     geoImage.counterwindow_begin + "\n" +
-                                     geoImage.counterwindow_end + "\n" +
-                                     "SIZE = " + geoImage.ImageData.Length;
-                        ;
-                        //TextBlock tb = new TextBlock() { Text = txt };
-                        //_messages_recus.Add(tb);
-
-                        AddToMessageList(txt);
-
-                    }, null);
-                    break;
-
-                case typetopic.vector3:
-                    float[] vector3 = GetVector3FromByteArray(arg.ApplicationMessage.Payload);
-                    txt = "(" + vector3[0] + " ; " + vector3[1] + " ; " + vector3[2] + ")";
+                case DataType._float:
+                    txt = Encoding.Default.GetString(data);
+                    float val_float = float.Parse(txt);
+                    txt = val_float.ToString();
                     AddToMessageList(txt);
+                    break;
+
+                case DataType._double:
+                    txt = Encoding.Default.GetString(data);
+                    double val_double = double.Parse(txt);
+                    txt = val_double.ToString();
+                    AddToMessageList(txt);
+                    break;
+
+                case DataType._string:
+                    txt = Encoding.Default.GetString(data);
+                    AddToMessageList(txt);
+                    break;
+
+                case DataType._image:
+                    DisplayImage(data);
+                    break;
+
+                case DataType._image_with_metadatas:
+                    DisplayImage(data);
+                    DisplayMetaData(data);
+                    break;
+
+                case DataType._image_with_json_in_metadata:
+                    break;
+
+                case DataType._vector3:
+                    float[] vec3 = GetVector3FromByteArray(data);
+                    txt = vec3[0].ToString() + " ; " +
+                          vec3[1].ToString() + " ; " +
+                          vec3[2].ToString();
+                    AddToMessageList(txt);
+
+                    break;
+                case DataType._color:
                     break;
 
                 default:
-                    Microsoft.VisualBasic.Interaction.MsgBox("TODO\n" + mykindOfTopic.ToString());
-
                     break;
             }
         }
 
-        float[] GetVector3FromByteArray(byte[] payload)
+        private void DisplayMetaData(byte[] data)
+        {
+
+        }
+
+        void AddToMessageList(string txt)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                TextBlock tb = new TextBlock() { Text = txt };
+                _messages_recus.Add(tb);
+            });
+        }
+
+        void DisplayImage(byte[] data)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                _bmp = ToImage(data);
+            });
+        }
+
+        float[] GetVector3FromByteArray(byte[] data)
         {
             float[] _valeur = new float[3];
+            //float : 4 octets
             byte[] x_b = new byte[4];
             byte[] y_b = new byte[4];
             byte[] z_b = new byte[4];
             try
             {
-                //float : 4 octets
-                Array.Copy(payload, 0, x_b, 0, 4);
-                Array.Copy(payload, 4, y_b, 0, 4);
-                Array.Copy(payload, 8, z_b, 0, 4);
+                Array.Copy(data, 0, x_b, 0, 4);
+                Array.Copy(data, 4, y_b, 0, 4);
+                Array.Copy(data, 8, z_b, 0, 4);
 
                 _valeur[0] = BitConverter.ToSingle(x_b, 0);
                 _valeur[1] = BitConverter.ToSingle(y_b, 0);
@@ -375,171 +258,9 @@ namespace MQTT_Subscriber
             }
         }
 
-
-
-
-
-
-
-
-
-
-
-        private void PrintIfdData(StringBuilder sb, ExifIfd Ifd, ExifData d)
+        void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            const int MaxContentLength = 35; // Maximum character count for the content length
-            const int MaxRawDataOutputCount = 40; // Maximum number of bytes for the raw data output
-            ExifTagType TagType;
-            ExifTag TagSpec;
-            int ValueCount, TagDataIndex, TagDataByteCount;
-            byte[] TagData;
-            ExifTagId TagId;
 
-            sb.Append("--- IFD ");
-            sb.Append(Ifd.ToString());
-            sb.Append(" ---\n");
-            bool HeaderPrinted = false;
-            d.InitTagEnumeration(Ifd);
-            while (d.EnumerateNextTag(out TagSpec))
-            {
-                if (!HeaderPrinted)
-                {
-                    sb.Append("Name                       ID      Type        Value   Byte   ");
-                    AlignedAppend(sb, "Content", MaxContentLength + 2);
-                    sb.Append("Raw data\n");
-                    sb.Append("                                               count   count\n");
-                    HeaderPrinted = true;
-                }
-
-                d.GetTagRawData(TagSpec, out TagType, out ValueCount, out TagData, out TagDataIndex);
-                AlignedAppend(sb, GetExifTagName(TagSpec), 27);
-
-                TagId = ExifData.ExtractTagId(TagSpec);
-                sb.Append("0x");
-                sb.Append(((ushort)TagId).ToString("X4"));
-                sb.Append("  ");
-
-                AlignedAppend(sb, TagType.ToString(), 9);
-                sb.Append("  ");
-                AlignedAppend(sb, ValueCount.ToString(), 6, true);
-                sb.Append("  ");
-
-                TagDataByteCount = ExifData.GetTagByteCount(TagType, ValueCount);
-                AlignedAppend(sb, TagDataByteCount.ToString("D"), 6, true);
-                sb.Append("  ");
-
-                AppendInterpretedContent(sb, d, TagSpec, TagType, MaxContentLength);
-                sb.Append("  ");
-
-                int k = TagDataByteCount;
-                if (k > MaxRawDataOutputCount) k = MaxRawDataOutputCount;
-                for (int i = 0; i < k; i++)
-                {
-                    sb.Append(TagData[TagDataIndex + i].ToString("X2"));
-                    sb.Append(" ");
-                }
-                if (k < TagDataByteCount) sb.Append("…");
-                sb.Append("\n");
-            }
-            sb.Append("\n");
-        }
-
-
-        private string GetExifTagName(ExifTag TagSpec)
-        {
-            string s = TagSpec.ToString();
-            if ((s.Length > 0) && (s[0] >= '0') && (s[0] <= '9'))
-            {
-                s = "???"; // If the name starts with a digit there is no name defined in the enum type "ExifTag"
-            }
-            return (s);
-        }
-
-
-        private void AppendInterpretedContent(StringBuilder sb, ExifData d, ExifTag TagSpec, ExifTagType TagType, int Length)
-        {
-            string s = "";
-
-            try
-            {
-                if (TagType == ExifTagType.Ascii)
-                {
-                    if (!d.GetTagValue(TagSpec, out s, StrCoding.Utf8)) s = "???";
-                }
-                else if ((TagType == ExifTagType.Byte) && ((TagSpec == ExifTag.XpTitle) || (TagSpec == ExifTag.XpComment) || (TagSpec == ExifTag.XpAuthor) ||
-                         (TagSpec == ExifTag.XpKeywords) || (TagSpec == ExifTag.XpSubject)))
-                {
-                    if (!d.GetTagValue(TagSpec, out s, StrCoding.Utf16Le_Byte)) s = "???";
-                }
-                else if ((TagType == ExifTagType.Undefined) && (TagSpec == ExifTag.UserComment))
-                {
-                    if (!d.GetTagValue(TagSpec, out s, StrCoding.IdCode_Utf16)) s = "???";
-                }
-                else if ((TagType == ExifTagType.Undefined) && ((TagSpec == ExifTag.ExifVersion) || (TagSpec == ExifTag.FlashPixVersion) ||
-                         (TagSpec == ExifTag.InteroperabilityVersion)))
-                {
-                    if (!d.GetTagValue(TagSpec, out s, StrCoding.UsAscii_Undef)) s = "???";
-                }
-                else if ((TagType == ExifTagType.Undefined) && ((TagSpec == ExifTag.SceneType) || (TagSpec == ExifTag.FileSource)))
-                {
-                    d.GetTagRawData(TagSpec, out _, out _, out byte[] RawData);
-                    if (RawData.Length > 0) s += RawData[0].ToString();
-                }
-                else if ((TagType == ExifTagType.Byte) || (TagType == ExifTagType.UShort) || (TagType == ExifTagType.ULong))
-                {
-                    d.GetTagValueCount(TagSpec, out int k);
-                    for (int i = 0; i < k; i++)
-                    {
-                        d.GetTagValue(TagSpec, out uint v, i);
-                        if (i > 0) s += ", ";
-                        s += v.ToString();
-                    }
-                }
-                else if (TagType == ExifTagType.SLong)
-                {
-                    d.GetTagValueCount(TagSpec, out int k);
-                    for (int i = 0; i < k; i++)
-                    {
-                        d.GetTagValue(TagSpec, out int v, i);
-                        if (i > 0) s += ", ";
-                        s += v.ToString();
-                    }
-                }
-                else if ((TagType == ExifTagType.SRational) || (TagType == ExifTagType.URational))
-                {
-                    d.GetTagValueCount(TagSpec, out int k);
-                    for (int i = 0; i < k; i++)
-                    {
-                        d.GetTagValue(TagSpec, out ExifRational v, i);
-                        if (i > 0) s += ", ";
-                        s += v.ToString();
-                    }
-                }
-            }
-            catch
-            {
-                s = "!Error!";
-            }
-            s = s.Replace('\r', ' ');
-            s = s.Replace('\n', ' ');
-            AlignedAppend(sb, s, Length);
-        }
-
-
-        private void AlignedAppend(StringBuilder sb, string s, int CharCount, bool RightAlign = false)
-        {
-            if (s.Length <= CharCount)
-            {
-                int SpaceCount = CharCount - s.Length;
-                if (RightAlign) sb.Append(' ', SpaceCount);
-                sb.Append(s);
-                if (!RightAlign) sb.Append(' ', SpaceCount);
-            }
-            else
-            {
-                sb.Append(s.Substring(0, CharCount - 1));
-                sb.Append('…');
-            }
         }
     }
 }
