@@ -154,7 +154,8 @@
 
             <Grid Margin="3">
                 <!--<Slider x:Name="slider_video" Value="{Binding nbframe, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>-->
-                <Slider x:Name="slider_video" Value="{Binding nbframe}" MouseLeftButtonUp="slider_video_MouseLeftButtonUp"/>
+                <Slider x:Name="slider_video" Value="{Binding nbframe}" Thumb.DragStarted="sliProgress_DragStarted"  Thumb.DragCompleted="sliProgress_DragCompleted" ValueChanged="sliProgress_ValueChanged" />
+
             </Grid>
 
             <!--Image BIS--><!--

@@ -21,6 +21,7 @@ using System.IO;
 using Microsoft.Win32;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Windows.Threading;
 
 namespace MQTT_Video_Publisher
 {
@@ -54,10 +55,12 @@ namespace MQTT_Video_Publisher
         public string topic_FrameSended = "video/frame/data";
         Dictionary<string, Action<byte[]?>> topics_subscribed;
 
+        VideoCapture _videoCapture;
         CancellationTokenSource cts;
         bool nextframe;
         bool is_video_playing;
         bool is_video_pausing;
+        bool userIsDraggingSlider;
         //bool slider_video_mouse_changing_by_code;
         //int nbframe_wanted = -1;
 
@@ -71,12 +74,21 @@ namespace MQTT_Video_Publisher
 
             Fill_cbx_ips();
             INIT_topics();
+            INIT_videoplayer();
         }
+
 
         void INIT_topics()
         {
             topics_subscribed = new Dictionary<string, Action<byte[]?>>();
             topics_subscribed["video/frame/next"] = NextFrame;
+        }
+        void INIT_videoplayer()
+        {
+            DispatcherTimer timer = new DispatcherTimer();
+            timer.Interval = TimeSpan.FromSeconds(1);
+            timer.Tick += videoplayer_Tick;
+            timer.Start();
         }
         void NextFrame(byte[]? data)
         {
@@ -136,11 +148,23 @@ namespace MQTT_Video_Publisher
             PlayingVideoStop();
         }
 
-
-        private void slider_video_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        void videoplayer_Tick(object? sender, EventArgs e)
         {
-            _videoCapture.PosFrames = (int)slider_video.Value;
+            if ((_videoCapture != null) && (_videoCapture.FrameCount > 0) && (!userIsDraggingSlider))
+            {
+                Dispatcher.BeginInvoke(() =>
+                {
+                    //slider_video.Minimum = 0;
+                    //slider_video.Maximum = _videoCapture.FrameCount;// mePlayer.NaturalDuration.TimeSpan.TotalSeconds;
+                    slider_video.Value = _videoCapture.PosFrames;// mePlayer.Position.TotalSeconds;
+                });
+            }
         }
+
+        //private void slider_video_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        //{
+        //    _videoCapture.PosFrames = (int)slider_video.Value;
+        //}
         //void slider_video_valuechanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         //{
         //    if (slider_video_mouse_changing_by_code) return;
@@ -148,6 +172,23 @@ namespace MQTT_Video_Publisher
         //    nbframe_wanted = (int)slider_video.Value;
         //    is_video_pausing = false;
         //}
+        private void sliProgress_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
+        {
+            userIsDraggingSlider = true;
+        }
+
+        private void sliProgress_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
+        {
+            userIsDraggingSlider = false;
+            //mePlayer.Position = TimeSpan.FromSeconds(slider_video.Value);
+            _videoCapture.Set(VideoCaptureProperties.PosFrames, slider_video.Value);
+//            _videoCapture.PosFrames = (int)slider_video.Value;
+        }
+
+        private void sliProgress_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            //lblProgressStatus.Text = TimeSpan.FromSeconds(slider_video.Value).ToString(@"hh\:mm\:ss");
+        }
         #endregion
 
         #region IP & IHM
@@ -348,7 +389,6 @@ namespace MQTT_Video_Publisher
 
         #region VIDEO FILE
 
-
         void Publish_videofile(string file)
         {
             cts = new CancellationTokenSource();
@@ -368,11 +408,10 @@ namespace MQTT_Video_Publisher
                 UpdateFrames("- / -");
             }
         }
-        VideoCapture _videoCapture;
+
         void PlayVideo_Thread(string file)
         {
             is_video_playing = true;
-
 
             //webcam
             //_videoCapture = new VideoCapture(0);
@@ -402,7 +441,7 @@ namespace MQTT_Video_Publisher
             System.Diagnostics.Stopwatch watch = System.Diagnostics.Stopwatch.StartNew();
             while (is_video_playing && !cts.IsCancellationRequested)
             {
-                while (is_video_pausing)
+                while (is_video_pausing || userIsDraggingSlider)
                     Thread.Sleep(10);
 
                 watch.Restart();
@@ -480,6 +519,7 @@ namespace MQTT_Video_Publisher
             exif.SaveJpeg(imageStream, newImageStream);
             return newImageStream.ToArray();
         }
+
 
 
 
