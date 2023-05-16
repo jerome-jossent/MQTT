@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MQTT_Video_Publisher"
         mc:Ignorable="d"
-        Title="Video frame to MQTT" Height="450" Width="800" Closing="Window_Closing">
+        Title="Video frame to MQTT" Height="180" Width="800" Closing="Window_Closing">
     <Grid Margin="5">
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
@@ -123,14 +123,38 @@
             <Grid Margin="3">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="auto"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="auto"/>
                     <ColumnDefinition Width="auto"/>
                 </Grid.ColumnDefinitions>
                 <TextBlock Grid.Column="0" Text="Video file"/>
-                <TextBox Grid.Column="1" Text="C:\DATA\RAN\Saint Ouen\SAINT OUEN - DEST\Videos\Video004401.mpg" x:Name="tbx_videofile"/>
-                <!--<CheckBox Grid.Column="2" x:Name="ckx_image" VerticalAlignment="Center" ToolTip="Retain"/>-->
-                <Button Grid.Column="3" Content="Publish" Click="Publish_video_Click"/>
+                <Image Grid.Column="1" VerticalAlignment="Center" Margin="3,0" MouseDown="btn_pickfile" Source="/Resources/folder.png" RenderOptions.BitmapScalingMode="Fant" Height="20"  />
+                <TextBox Grid.Column="2" Text="C:\DATA\RAN\Saint Ouen\SAINT OUEN - DEST\Videos\Video004401.mpg" x:Name="tbx_videofile"/>
+                
+                <Image Grid.Column="3" VerticalAlignment="Center" Margin="3,0" MouseDown="btn_video_pause_Click" Source="/Resources/Pause.png" RenderOptions.BitmapScalingMode="Fant" Height="20"  />
+                <Image Grid.Column="3" VerticalAlignment="Center" Margin="3,0" x:Name="btn_video_play"  MouseDown="btn_video_play_Click" Source="/Resources/Lecture.png" RenderOptions.BitmapScalingMode="Fant" Height="20"  />
+                <Image Grid.Column="4" VerticalAlignment="Center" Margin="3,0" MouseDown="btn_video_stop_Click" Source="/Resources/Stop.png" RenderOptions.BitmapScalingMode="Fant" Height="20"  />
+                <!--<CheckBox Grid.Column="3" x:Name="ckx_image" VerticalAlignment="Center" ToolTip="Retain"/>-->
+                <!--<Button Grid.Column="4" Content="Publish" Click="Publish_video_Click"/>-->
+            </Grid>
+
+            <Grid Margin="3">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="Frame :"/>
+
+                <TextBlock Grid.Column="4" Text="0/0" x:Name="video_frames"/>
+            </Grid>
+
+            <Grid Margin="3">
+                <!--<Slider x:Name="slider_video" Value="{Binding nbframe, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>-->
+                <Slider x:Name="slider_video" Value="{Binding nbframe}" MouseLeftButtonUp="slider_video_MouseLeftButtonUp"/>
             </Grid>
 
             <!--Image BIS--><!--

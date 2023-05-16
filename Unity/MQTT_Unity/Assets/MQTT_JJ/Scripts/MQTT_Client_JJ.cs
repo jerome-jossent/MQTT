@@ -106,6 +106,12 @@ public class MQTT_Client_JJ : M2MqttUnityClient
 
     protected override void DecodeMessage(string topic, byte[] message)
     {
+        if (!topic_subscribers.ContainsKey(topic))
+        {
+            Debug.Log("Unkown topic : " + topic);
+            return;
+        }
+
         foreach (MQTT_JJ item in topic_subscribers[topic])
         {
             item._DecodeMessage(message);

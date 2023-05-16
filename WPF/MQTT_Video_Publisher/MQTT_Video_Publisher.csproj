@@ -11,6 +11,11 @@
     <None Remove="Resources\corbeille grise.png" />
     <None Remove="Resources\device_connect.png" />
     <None Remove="Resources\device_disconnect.png" />
+    <None Remove="Resources\folder.png" />
+    <None Remove="Resources\Icon_mqtt.ico" />
+    <None Remove="Resources\Lecture.png" />
+    <None Remove="Resources\Pause.png" />
+    <None Remove="Resources\Stop.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -21,6 +26,21 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Resources\device_disconnect.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\folder.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Icon_mqtt.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Lecture.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Pause.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Stop.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
