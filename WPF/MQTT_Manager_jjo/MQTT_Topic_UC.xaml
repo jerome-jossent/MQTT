@@ -30,11 +30,11 @@
 
             <!--VALUE-->
             <Grid Grid.Column="3">
-                <Grid x:Name="string" Visibility="Visible">
+                <Grid x:Name="grid_string" Visibility="Visible">
                     <TextBox Text="{Binding value_string}"/>
                 </Grid>
-                
-                <Grid x:Name="integer" Visibility="Hidden">
+
+                <Grid x:Name="grid_integer" Visibility="Hidden">
                     <xctk:IntegerUpDown Value="{Binding value_integer}"/>
                 </Grid>
 

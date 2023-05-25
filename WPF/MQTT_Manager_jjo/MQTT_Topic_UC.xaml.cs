@@ -39,7 +39,58 @@ namespace MQTT_Manager_jjo
         }
         string _parameter_name;
 
-        public enum dataType
+        public enum DataType { _boolean, _integer, _long, _float, _double, _string, _image, _image_with_metadatas, _image_with_json_in_metadata, _vector3, _color }
+        public DataType dataType
+        {
+            get => _dataType;
+            set
+            {
+                if (value == _dataType) return;
+                _dataType = value;
+                OnPropertyChanged();
+
+
+
+
+
+                //Update VISIBILITY
+                grid_string.Visibility = Visibility.Hidden;
+                grid_integer.Visibility = Visibility.Hidden;
+
+                switch (_dataType)
+                {
+                    case DataType._boolean:
+                        break;
+                    case DataType._integer: 
+                        grid_integer.Visibility= Visibility.Visible;
+                        break;
+                    case DataType._long:
+                        break;
+                    case DataType._float:
+                        break;
+                    case DataType._double:
+                        break;
+                    case DataType._string:
+                        grid_string.Visibility = Visibility.Visible;
+                        break;
+                    case DataType._image:
+                        break;
+                    case DataType._image_with_metadatas:
+                        break;
+                    case DataType._image_with_json_in_metadata:
+                        break;
+                    case DataType._vector3:
+                        break;
+                    case DataType._color:
+                        break;
+                    default:
+                        break;
+                }
+
+            }
+        }
+        DataType _dataType;
+
 
         public string value_string
         {
@@ -55,7 +106,7 @@ namespace MQTT_Manager_jjo
 
         public int? value_integer
         {
-            get=>_value_integer;            
+            get => _value_integer;
             set
             {
                 if (value == _value_integer) return;
@@ -65,7 +116,7 @@ namespace MQTT_Manager_jjo
         }
         int? _value_integer;
 
-        
+
 
         public MQTT_Topic_UC()
         {
