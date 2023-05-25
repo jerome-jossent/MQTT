@@ -9,8 +9,15 @@
         Title="MainWindow" Height="450" Width="800">
     <Grid>
 
-        <MQTT_Manager_jjo:MQTT_Manager_UC Margin="10,10,10,0" VerticalAlignment="Top"/>
-        <MQTT_Manager_jjo:MQTT_Topic_UC parameter_name="Crop left" dataType="_string" HorizontalAlignment="Right" Margin="0,65,10,0" VerticalAlignment="Top" Width="780"/>
+        <StackPanel>
 
+            <MQTT_Manager_jjo:MQTT_Manager_UC Margin="10,10,10,0" VerticalAlignment="Top"/>
+
+            <MQTT_Manager_jjo:MQTT_Topic_UC Margin="10,5,10,0" parameter_name="Crop left" dataType="_integer" x:Name="crop_left" />
+            <MQTT_Manager_jjo:MQTT_Topic_UC Margin="10,5,10,0" parameter_name="Crop right" dataType="_integer" x:Name="crop_right" />
+            <MQTT_Manager_jjo:MQTT_Topic_UC Margin="10,5,10,0" parameter_name="Crop top" dataType="_integer" x:Name="crop_top"/>
+            <MQTT_Manager_jjo:MQTT_Topic_UC Margin="10,5,10,0" parameter_name="Crop bottom" dataType="_integer" x:Name="crop_bottom"/>
+
+        </StackPanel>
     </Grid>
 </Window>

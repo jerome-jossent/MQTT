@@ -7,9 +7,91 @@
              mc:Ignorable="d" 
              d:DesignHeight="25" d:DesignWidth="800"
              
-                 xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
-
+             xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
              >
+    <UserControl.Resources>
+        <Style x:Key="CheckRadioFocusVisual">
+            <Setter Property="Control.Template">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <Rectangle Margin="14,0,0,0" SnapsToDevicePixels="true" Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" StrokeThickness="1" StrokeDashArray="1 2"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="SliderCheckBox" TargetType="{x:Type CheckBox}">
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type CheckBox}">
+                        <ControlTemplate.Resources>
+                            <Storyboard x:Key="StoryboardIsChecked">
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.X)" Storyboard.TargetName="CheckFlag">
+                                    <EasingDoubleKeyFrame KeyTime="0" Value="0"/>
+                                    <EasingDoubleKeyFrame KeyTime="0:0:0.2" Value="14"/>
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                            <Storyboard x:Key="StoryboardIsCheckedOff">
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.X)" Storyboard.TargetName="CheckFlag">
+                                    <EasingDoubleKeyFrame KeyTime="0" Value="14"/>
+                                    <EasingDoubleKeyFrame KeyTime="0:0:0.2" Value="0"/>
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </ControlTemplate.Resources>
+                        <BulletDecorator Background="Transparent" SnapsToDevicePixels="true">
+                            <BulletDecorator.Bullet>
+                                <Border x:Name="ForegroundPanel" BorderThickness="1" Width="35" Height="20" CornerRadius="10">
+                                    <Canvas>
+                                        <Border Background="White" x:Name="CheckFlag" CornerRadius="10" VerticalAlignment="Center" BorderThickness="1" Width="19" Height="18" RenderTransformOrigin="0.5,0.5">
+                                            <Border.RenderTransform>
+                                                <TransformGroup>
+                                                    <ScaleTransform/>
+                                                    <SkewTransform/>
+                                                    <RotateTransform/>
+                                                    <TranslateTransform/>
+                                                </TransformGroup>
+                                            </Border.RenderTransform>
+                                            <Border.Effect>
+                                                <DropShadowEffect ShadowDepth="1" Direction="180" />
+                                            </Border.Effect>
+                                        </Border>
+                                    </Canvas>
+                                </Border>
+                            </BulletDecorator.Bullet>
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="Center"/>
+                        </BulletDecorator>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="HasContent" Value="true">
+                                <Setter Property="FocusVisualStyle" Value="{StaticResource CheckRadioFocusVisual}"/>
+                                <Setter Property="Padding" Value="4,0,0,0"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="false">
+                                <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <!--<Setter TargetName="ForegroundPanel" Property="Background" Value="{DynamicResource Accent}" />-->
+                                <Setter TargetName="ForegroundPanel" Property="Background" Value="Green" />
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard x:Name="BeginStoryboardCheckedTrue" Storyboard="{StaticResource StoryboardIsChecked}" />
+                                    <RemoveStoryboard BeginStoryboardName="BeginStoryboardCheckedFalse" />
+                                </Trigger.EnterActions>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="False">
+                                <Setter TargetName="ForegroundPanel" Property="Background" Value="Gray" />
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard x:Name="BeginStoryboardCheckedFalse" Storyboard="{StaticResource StoryboardIsCheckedOff}" />
+                                    <RemoveStoryboard BeginStoryboardName="BeginStoryboardCheckedTrue" />
+                                </Trigger.EnterActions>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+        
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
@@ -23,6 +105,8 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="auto"/>
                 <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="auto"/>
             </Grid.ColumnDefinitions>
             <TextBlock Grid.Column="0" Text="{Binding parameter_name}" VerticalAlignment="Center" />
             <TextBox Grid.Column="1" VerticalContentAlignment="Center" VerticalAlignment="Center"/>
@@ -30,15 +114,36 @@
 
             <!--VALUE-->
             <Grid Grid.Column="3">
-                <Grid x:Name="grid_string" Visibility="Visible">
+                <Grid x:Name="grid_string" Visibility="Hidden">
                     <TextBox Text="{Binding value_string}"/>
                 </Grid>
 
+                <Grid x:Name="grid_boolean" Visibility="Visible">
+                    <CheckBox IsChecked="{Binding value_bool}" Style="{DynamicResource SliderCheckBox}"/>
+                </Grid>
+                
                 <Grid x:Name="grid_integer" Visibility="Hidden">
                     <xctk:IntegerUpDown Value="{Binding value_integer}"/>
+                </Grid>      
+                
+                <Grid x:Name="grid_long" Visibility="Hidden">
+                    <xctk:LongUpDown Value="{Binding value_long}"/>
                 </Grid>
-
+                
+                <Grid x:Name="grid_double" Visibility="Hidden">
+                    <xctk:DoubleUpDown Value="{Binding value_double}"/>
+                </Grid>                      
             </Grid>
+            
+            <CheckBox Grid.Column="4" IsChecked="{Binding sendToMQTTifValueChange}" 
+                      ToolTip="Send to MQTT if value change."
+                      VerticalAlignment="Center"/>
+
+            <Image Grid.Column="5" Margin="5,0" Height="17" RenderOptions.BitmapScalingMode="Fant" 
+                   x:Name="btn_send"
+                   Source="/MQTT_Manager_jjo;component/Resources/Lecture.png" 
+                   MouseDown="Send_Click" HorizontalAlignment="Left" Width="17"/>
+            
         </Grid>
     </Grid>
 </UserControl>

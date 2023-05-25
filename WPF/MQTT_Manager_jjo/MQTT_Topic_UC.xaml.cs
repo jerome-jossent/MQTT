@@ -37,7 +37,7 @@ namespace MQTT_Manager_jjo
                 OnPropertyChanged();
             }
         }
-        string _parameter_name;
+        string _parameter_name = "parameter name";
 
         public enum DataType { _boolean, _integer, _long, _float, _double, _string, _image, _image_with_metadatas, _image_with_json_in_metadata, _vector3, _color }
         public DataType dataType
@@ -49,49 +49,29 @@ namespace MQTT_Manager_jjo
                 _dataType = value;
                 OnPropertyChanged();
 
-
-
-
-
-                //Update VISIBILITY
-                grid_string.Visibility = Visibility.Hidden;
-                grid_integer.Visibility = Visibility.Hidden;
-
-                switch (_dataType)
-                {
-                    case DataType._boolean:
-                        break;
-                    case DataType._integer: 
-                        grid_integer.Visibility= Visibility.Visible;
-                        break;
-                    case DataType._long:
-                        break;
-                    case DataType._float:
-                        break;
-                    case DataType._double:
-                        break;
-                    case DataType._string:
-                        grid_string.Visibility = Visibility.Visible;
-                        break;
-                    case DataType._image:
-                        break;
-                    case DataType._image_with_metadatas:
-                        break;
-                    case DataType._image_with_json_in_metadata:
-                        break;
-                    case DataType._vector3:
-                        break;
-                    case DataType._color:
-                        break;
-                    default:
-                        break;
-                }
-
+                UpdateValuesVISIBILITY();
             }
         }
         DataType _dataType;
 
+        public bool? sendToMQTTifValueChange
+        {
+            get => _sendToMQTTifValueChange;
+            set
+            {
+                if (value == _sendToMQTTifValueChange) return;
+                _sendToMQTTifValueChange = value;
+                if (value == true)
+                    btn_send.Visibility = Visibility.Hidden;
+                else
+                    btn_send.Visibility = Visibility.Visible;
 
+                OnPropertyChanged();
+            }
+        }
+        bool? _sendToMQTTifValueChange = false;
+
+        #region VALUE
         public string value_string
         {
             get => _value_string;
@@ -100,9 +80,23 @@ namespace MQTT_Manager_jjo
                 if (value == _value_string) return;
                 _value_string = value;
                 OnPropertyChanged();
+                ValueChange();
             }
         }
         string _value_string;
+
+        public bool? value_bool
+        {
+            get => _value_bool;
+            set
+            {
+                if (value == _value_bool) return;
+                _value_bool = value;
+                OnPropertyChanged();
+                ValueChange();
+            }
+        }
+        bool? _value_bool;
 
         public int? value_integer
         {
@@ -112,11 +106,37 @@ namespace MQTT_Manager_jjo
                 if (value == _value_integer) return;
                 _value_integer = value;
                 OnPropertyChanged();
+                ValueChange();
             }
         }
         int? _value_integer;
 
+        public int? value_long
+        {
+            get => _value_long;
+            set
+            {
+                if (value == _value_long) return;
+                _value_long = value;
+                OnPropertyChanged();
+                ValueChange();
+            }
+        }
+        int? _value_long;
 
+        public double? value_double
+        {
+            get => _value_double;
+            set
+            {
+                if (value == _value_double) return;
+                _value_double = value;
+                OnPropertyChanged();
+                ValueChange();
+            }
+        }
+        double? _value_double;
+        #endregion
 
         public MQTT_Topic_UC()
         {
@@ -124,5 +144,55 @@ namespace MQTT_Manager_jjo
             DataContext = this;
         }
 
+        private void UpdateValuesVISIBILITY()
+        {
+            grid_string.Visibility = Visibility.Hidden;
+            grid_boolean.Visibility = Visibility.Hidden;
+            grid_integer.Visibility = Visibility.Hidden;
+            grid_long.Visibility = Visibility.Hidden;
+            grid_double.Visibility = Visibility.Hidden;
+
+            switch (dataType)
+            {
+                case DataType._boolean:
+                    grid_boolean.Visibility = Visibility.Visible;
+                    break;
+                case DataType._integer:
+                    grid_integer.Visibility = Visibility.Visible;
+                    break;
+                case DataType._long:
+                    grid_long.Visibility = Visibility.Visible;
+                    break;
+                // case DataType._float:                    break;
+                case DataType._double:
+                    grid_double.Visibility = Visibility.Visible;
+                    break;
+                case DataType._string:
+                    grid_string.Visibility = Visibility.Visible;
+                    break;
+                case DataType._image:
+                    break;
+                case DataType._image_with_metadatas:
+                    break;
+                case DataType._image_with_json_in_metadata:
+                    break;
+                case DataType._vector3:
+                    break;
+                case DataType._color:
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private void ValueChange()
+        {
+            throw new NotImplementedException();
+        }
+
+        private void Send_Click(object sender, MouseButtonEventArgs e)
+        {
+
+        }
     }
 }

@@ -10,6 +10,7 @@
     <None Remove="Resources\corbeille grise.png" />
     <None Remove="Resources\device_connect.png" />
     <None Remove="Resources\device_disconnect.png" />
+    <None Remove="Resources\Lecture.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -20,6 +21,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
     <Resource Include="Resources\device_disconnect.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Resources\Lecture.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
   </ItemGroup>
