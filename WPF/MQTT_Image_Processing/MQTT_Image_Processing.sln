@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.33414.496
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MQTT_Image_Processing", "MQTT_Image_Processing\MQTT_Image_Processing.csproj", "{B0F9B923-C67D-4BCA-993C-D4B76B903CEB}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MQTT_Manager_jjo", "..\MQTT_Manager_jjo\MQTT_Manager_jjo.csproj", "{3BFCCE1B-A049-40FF-B7CF-B91816453694}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B0F9B923-C67D-4BCA-993C-D4B76B903CEB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B0F9B923-C67D-4BCA-993C-D4B76B903CEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B0F9B923-C67D-4BCA-993C-D4B76B903CEB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B0F9B923-C67D-4BCA-993C-D4B76B903CEB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3BFCCE1B-A049-40FF-B7CF-B91816453694}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3BFCCE1B-A049-40FF-B7CF-B91816453694}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3BFCCE1B-A049-40FF-B7CF-B91816453694}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3BFCCE1B-A049-40FF-B7CF-B91816453694}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F7FB667E-B8F1-4F49-9A3B-1DC0EA42D6FC}
+	EndGlobalSection
+EndGlobal
