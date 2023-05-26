@@ -159,11 +159,18 @@ namespace MQTT_Publisher
         }
         void Publish_vector3()
         {
-            float x = float.Parse(tbx_vector3_x.Text);
-            float y = float.Parse(tbx_vector3_y.Text);
-            float z = float.Parse(tbx_vector3_z.Text);
+            float x = float.Parse(tbx_vector3_x.Text.Replace(".", ","));
+            float y = float.Parse(tbx_vector3_y.Text.Replace(".", ","));
+            float z = float.Parse(tbx_vector3_z.Text.Replace(".", ","));
             Publish_vector3(x, y, z);
         }
+
+        void Publish_vector4(string topic, float x, float y, float z, float w, bool retain = false)
+        {
+            byte[] data = CombomBinaryArray(BitConverter.GetBytes(x), BitConverter.GetBytes(y), BitConverter.GetBytes(z), BitConverter.GetBytes(w));
+            MQTT_Publish(topic, data, retain);
+        }
+
         private byte[] CombomBinaryArray(byte[] srcArray1, byte[] srcArray2)
         {
             //Create a new array based on the total number of two array elements to be merged
@@ -193,7 +200,22 @@ namespace MQTT_Publisher
             return newArray;
         }
 
+        private byte[] CombomBinaryArray(byte[] srcArray1, byte[] srcArray2, byte[] srcArray3, byte[] srcArray4)
+        {
+            //Create a new array based on the total number of two array elements to be merged
+            byte[] newArray = new byte[srcArray1.Length + srcArray2.Length + srcArray3.Length + srcArray4.Length];
 
+            //Copy the first array to the newly created array
+            Array.Copy(srcArray1, 0, newArray, 0, srcArray1.Length);
+            //Copy the second array to the newly created array
+            Array.Copy(srcArray2, 0, newArray, srcArray1.Length, srcArray2.Length);
+            //Copy the third array to the newly created array
+            Array.Copy(srcArray3, 0, newArray, srcArray1.Length + srcArray2.Length, srcArray3.Length);
+
+            Array.Copy(srcArray4, 0, newArray, srcArray1.Length + srcArray2.Length + srcArray3.Length, srcArray4.Length);
+
+            return newArray;
+        }
 
         private void xy_move(object sender, MouseEventArgs e)
         {
@@ -660,5 +682,18 @@ namespace MQTT_Publisher
 
             mqttClient.PublishAsync(applicationMessage, System.Threading.CancellationToken.None).GetAwaiter().GetResult();
         }
+
+        private void Slider_crop_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (crop_left == null || crop_right == null || crop_top == null || crop_bottom == null) return;
+
+            Publish_vector4("crop", (float)crop_left.Value, (float)crop_top.Value, (float)crop_right.Value, (float)crop_bottom.Value);
+
+            //Thickness margin = new Thickness(crop_left.Value, crop_top.Value, crop_right.Value, crop_bottom.Value);
+            //string margin_json = Newtonsoft.Json.JsonConvert.SerializeObject(margin);
+            //MQTT_Publish("crop", margin_json);
+        }
+
+
     }
 }

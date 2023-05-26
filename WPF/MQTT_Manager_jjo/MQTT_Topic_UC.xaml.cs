@@ -14,6 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using static MQTT_Manager_jjo.MQTT_Enums;
 
 namespace MQTT_Manager_jjo
 {
@@ -39,7 +40,6 @@ namespace MQTT_Manager_jjo
         }
         string _parameter_name = "parameter name";
 
-        public enum DataType { _boolean, _integer, _long, _float, _double, _string, _image, _image_with_metadatas, _image_with_json_in_metadata, _vector3, _color }
         public DataType dataType
         {
             get => _dataType;
@@ -178,7 +178,7 @@ namespace MQTT_Manager_jjo
                     break;
                 case DataType._vector3:
                     break;
-                case DataType._color:
+                case DataType._vector4:
                     break;
                 default:
                     break;

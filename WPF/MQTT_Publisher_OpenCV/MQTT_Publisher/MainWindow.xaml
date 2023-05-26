@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MQTT_Publisher"
         mc:Ignorable="d"
-        Title="MQTT PUBLISH OPENCV" Height="500" Width="550"
+        Title="MQTT PUBLISH OPENCV" Height="600" Width="550"
         Closing="Window_Closing"
         >
     <Grid Margin="5">
@@ -242,6 +242,46 @@
                 </Grid.ColumnDefinitions>
                 <TextBlock Grid.Column="0" Text="TOUT"/>
                 <Button Grid.Column="2" Content="Publish" Click="Publish_all_Click"/>
+            </Grid>
+            
+            
+            <Separator/>
+
+            <Grid Margin="3">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="60"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="Crop left"/>
+                <Slider Grid.Column="1" Minimum="0" Maximum="1" Value="0.5" x:Name="crop_left" ValueChanged="Slider_crop_ValueChanged"/>
+            </Grid>
+            <Grid Margin="3">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="60"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="Crop top"/>
+                <Slider Grid.Column="1" Minimum="0" Maximum="1" Value="0.5" x:Name="crop_top" ValueChanged="Slider_crop_ValueChanged"/>
+            </Grid>
+            <Grid Margin="3">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="60"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="Crop right"/>
+                <Slider Grid.Column="1" Minimum="0" Maximum="1" Value="0.5" x:Name="crop_right" ValueChanged="Slider_crop_ValueChanged"/>
+            </Grid>
+            <Grid Margin="3">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="60"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="Crop bottom"/>
+                <Slider Grid.Column="1" Minimum="0" Maximum="1" Value="0.5" x:Name="crop_bottom" ValueChanged="Slider_crop_ValueChanged"/>
             </Grid>
         </StackPanel>
     </Grid>
