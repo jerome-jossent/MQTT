@@ -11,13 +11,20 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
-            <RowDefinition Height="auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
 
         <MQTT_Manager_jjo:MQTT_Manager_UC Grid.Row="0" x:Name="mqtt_uc"/>
 
-        <Grid Grid.Row="1">
+        <ListView Grid.Row="1" x:Name="lvw_sub"/>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal">
+            <Image Margin="3" RenderOptions.BitmapScalingMode="Fant" Source="/Resources/Plus.png" Height="15" MouseDown="SubscribeAdd"/>
+        </StackPanel>
+        
+        
+        <!--<Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="auto"/>
                 <ColumnDefinition Width="*"/>
@@ -39,21 +46,16 @@
 
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="auto"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
 
-            <ListBox Grid.Row="0" Grid.Column="0"
-                     ItemsSource="{Binding _messages_recus, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                     />
+            <ListBox Grid.Column="0" ItemsSource="{Binding _messages_recus, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
-            <Image Grid.Row="0" Grid.Column="1" Source="{Binding _bmp, UpdateSourceTrigger=PropertyChanged}" RenderOptions.BitmapScalingMode="Fant" />
-            <!--<Image Grid.Row="1" Grid.Column="0" Source="{Binding _bmp_webcam, UpdateSourceTrigger=PropertyChanged}" RenderOptions.BitmapScalingMode="Fant" />
-            <Image Grid.Row="1" Grid.Column="1" Source="{Binding _bmp_folder, UpdateSourceTrigger=PropertyChanged}" RenderOptions.BitmapScalingMode="Fant" />-->
-        </Grid>
+            <Image Grid.Column="1" Source="{Binding _bmp, UpdateSourceTrigger=PropertyChanged}" RenderOptions.BitmapScalingMode="Fant" />
+
+            <TreeView Grid.Column="2" x:Name="tvw_json" />
+        </Grid>-->
 
     </Grid>
 </Window>

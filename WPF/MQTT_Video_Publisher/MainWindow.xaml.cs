@@ -479,9 +479,8 @@ namespace MQTT_Video_Publisher
                 //DateTime t = DateTime.Now;
                 //ajout des metadatas
                 string metadatas = "{" +
-                    "frame=" + nbframe +
-                    //", time_s=" + (t - t0).TotalSeconds.ToString("0.000").Replace(",", ".") +
-                    ", time_s=" + (nbframe / _videoCapture.Fps).ToString("0.000").Replace(",", ".") +
+                    '"' + "frame" + '"' + ": " + nbframe +
+                    ", " + '"' + "time_s" + '"' + ": " + (nbframe / _videoCapture.Fps).ToString("0.000").Replace(",", ".") +
                     "}";
                 data = AddMetadatas(data, metadatas);
 

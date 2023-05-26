@@ -22,7 +22,7 @@ namespace MQTT_Manager_jjo
         public MQTTnet.Client.IMqttClient mqttClient;
 
         public event EventHandler connected;
-        public event EventHandler diconnected;
+        public event EventHandler disconnected;
 
         public Dictionary<string, Action<byte[]?>> topics_subscribed;
 
@@ -168,21 +168,7 @@ namespace MQTT_Manager_jjo
 
         void MQTTClient_Disconnect()
         {
-            if (mqttClient == null) return;
-
-            try
-            {
-                mqttClient.DisconnectAsync(new MQTTnet.Client.MqttClientDisconnectOptionsBuilder().WithReason(MQTTnet.Client.MqttClientDisconnectOptionsReason.NormalDisconnection).Build()).GetAwaiter().GetResult();
-                mqttClient.ConnectingAsync -= MqttClient_ConnectingAsync;
-                mqttClient.ConnectedAsync -= MqttClient_ConnectedAsync;
-                mqttClient.DisconnectedAsync -= MqttClient_DisconnectedAsync;
-
-                mqttClient.Dispose();
-            }
-            catch (Exception ex)
-            {
-
-            }
+            mqttClient?.DisconnectAsync(new MQTTnet.Client.MqttClientDisconnectOptionsBuilder().WithReason(MQTTnet.Client.MqttClientDisconnectOptionsReason.NormalDisconnection).Build());
         }
 
         Task MqttClient_ConnectingAsync(MQTTnet.Client.MqttClientConnectingEventArgs arg)
@@ -201,8 +187,13 @@ namespace MQTT_Manager_jjo
 
         Task MqttClient_DisconnectedAsync(MQTTnet.Client.MqttClientDisconnectedEventArgs arg)
         {
+            mqttClient.ConnectingAsync -= MqttClient_ConnectingAsync;
+            mqttClient.ConnectedAsync -= MqttClient_ConnectedAsync;
+            mqttClient.DisconnectedAsync -= MqttClient_DisconnectedAsync;
+
+            mqttClient.Dispose();
             SetStatusConnection(Colors.Red);
-            diconnected?.Invoke(this, arg);
+            disconnected?.Invoke(this, arg);
             return MQTTnet.Internal.CompletedTask.Instance;
         }
 
@@ -282,6 +273,5 @@ namespace MQTT_Manager_jjo
             MQTTClient_Disconnect();
         }
         #endregion
-
     }
 }

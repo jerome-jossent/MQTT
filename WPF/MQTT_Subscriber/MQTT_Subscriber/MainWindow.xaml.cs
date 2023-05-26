@@ -14,6 +14,8 @@ using System.Windows.Threading;
 using Image = System.Drawing.Image;
 using CompactExifLib;
 using System.Runtime.CompilerServices;
+using MQTT_Manager_jjo;
+//using static System.Net.Mime.MediaTypeNames;
 
 namespace MQTT_Subscriber
 {
@@ -25,16 +27,16 @@ namespace MQTT_Subscriber
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
 
-        public ObservableCollection<FrameworkElement> _messages_recus
-        {
-            get { return messages_recus; }
-            set
-            {
-                messages_recus = value;
-                OnPropertyChanged();
-            }
-        }
-        ObservableCollection<FrameworkElement> messages_recus;
+        //public ObservableCollection<FrameworkElement> _messages_recus
+        //{
+        //    get { return messages_recus; }
+        //    set
+        //    {
+        //        messages_recus = value;
+        //        OnPropertyChanged();
+        //    }
+        //}
+        //ObservableCollection<FrameworkElement> messages_recus;
 
         public BitmapImage _bmp
         {
@@ -50,28 +52,6 @@ namespace MQTT_Subscriber
         enum DataType { _boolean, _integer, _long, _float, _double, _string, _image, _image_with_metadatas, _image_with_json_in_metadata, _vector3, _color }
         DataType dataType;
 
-        //public BitmapImage _bmp_webcam
-        //{
-        //    get { return bmp_webcam; }
-        //    set
-        //    {
-        //        bmp_webcam = value;
-        //        OnPropertyChanged("_bmp_webcam");
-        //    }
-        //}
-        //BitmapImage bmp_webcam;
-
-        //public BitmapImage _bmp_folder
-        //{
-        //    get { return bmp_folder; }
-        //    set
-        //    {
-        //        bmp_folder = value;
-        //        OnPropertyChanged("_bmp_folder");
-        //    }
-        //}
-        //BitmapImage bmp_folder;
-
         public MainWindow()
         {
             InitializeComponent();
@@ -79,137 +59,165 @@ namespace MQTT_Subscriber
             INITS();
         }
 
-
         void INITS()
         {
             mqtt_uc.topics_subscribed = new Dictionary<string, Action<byte[]?>>();
-            cbx_datatype.ItemsSource = Enum.GetValues(typeof(DataType)).Cast<DataType>();
-            messages_recus = new ObservableCollection<FrameworkElement>();
+//            cbx_datatype.ItemsSource = Enum.GetValues(typeof(DataType)).Cast<DataType>();
+//            messages_recus = new ObservableCollection<FrameworkElement>();
         }
-
-        void btn_subscribe_Click(object sender, RoutedEventArgs e)
+        private void SubscribeAdd(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            dataType = (DataType)Enum.Parse(typeof(DataType), cbx_datatype.Text);
-            string topic = tbx_topic.Text;
-
-            //unsubscribe
-            if (mqtt_uc.topics_subscribed.ContainsKey(topic) && mqtt_uc.mqttClient.IsConnected)
-                mqtt_uc.MQTTClient_Unubscribes(topic);
-
-            //update dictionnary
-            if (mqtt_uc.topics_subscribed.ContainsKey(topic))
-                mqtt_uc.topics_subscribed[topic] = ManageIncomingData;
-            else
-                mqtt_uc.topics_subscribed.Add(topic, ManageIncomingData);
-
-            //force connection & subscribe
-            if (!mqtt_uc.isConnected)
-                mqtt_uc.MQTTClient_Connect();
-            else
-            {
-                //subscribe
-                mqtt_uc.MQTTClient_Subscribes();
-            }
-        }
-
-        void ManageIncomingData(byte[]? data)
-        {
-            if (data == null) return;
-
-            DateTime dateTime = DateTime.Now;
-
-            string txt;
-            switch (dataType)
-            {
-                case DataType._boolean:
-                    txt = Encoding.Default.GetString(data);
-                    bool val_bool = bool.Parse(txt);
-                    txt = val_bool.ToString();
-                    AddToMessageList(txt);
-                    break;
-
-                case DataType._integer:
-                    txt = Encoding.Default.GetString(data);
-                    int val_int = int.Parse(txt);
-                    txt = val_int.ToString();
-                    AddToMessageList(txt);
-                    break;
-
-                case DataType._long:
-                    txt = Encoding.Default.GetString(data);
-                    long val_long = long.Parse(txt);
-                    txt = val_long.ToString();
-                    AddToMessageList(txt);
-                    break;
-
-                case DataType._float:
-                    txt = Encoding.Default.GetString(data);
-                    float val_float = float.Parse(txt);
-                    txt = val_float.ToString();
-                    AddToMessageList(txt);
-                    break;
-
-                case DataType._double:
-                    txt = Encoding.Default.GetString(data);
-                    double val_double = double.Parse(txt);
-                    txt = val_double.ToString();
-                    AddToMessageList(txt);
-                    break;
-
-                case DataType._string:
-                    txt = Encoding.Default.GetString(data);
-                    AddToMessageList(txt);
-                    break;
-
-                case DataType._image:
-                    DisplayImage(data);
-                    break;
-
-                case DataType._image_with_metadatas:
-                    DisplayImage(data);
-                    DisplayMetaData(data);
-                    break;
-
-                case DataType._image_with_json_in_metadata:
-                    break;
-
-                case DataType._vector3:
-                    float[] vec3 = GetVector3FromByteArray(data);
-                    txt = vec3[0].ToString() + " ; " +
-                          vec3[1].ToString() + " ; " +
-                          vec3[2].ToString();
-                    AddToMessageList(txt);
-
-                    break;
-                case DataType._color:
-                    break;
-
-                default:
-                    break;
-            }
-        }
-
-        private void DisplayMetaData(byte[] data)
-        {
-
-        }
-
-        void AddToMessageList(string txt)
-        {
+            MQTT_One_Topic_Subscribed mots = new(mqtt_uc);
             Dispatcher.Invoke(() =>
             {
-                TextBlock tb = new TextBlock() { Text = txt };
-                _messages_recus.Add(tb);
+                MQTT_One_Topic_Subscribed_UC mots_uc = new();
+                mots_uc._Link(mots);
+                lvw_sub.Items.Add(mots_uc);
             });
         }
 
-        void DisplayImage(byte[] data)
-        {
-            Dispatcher.Invoke(() =>
-            {
-                _bmp = ToImage(data);
-            });
-        }
+        //void btn_subscribe_Click(object sender, RoutedEventArgs e)
+        //{
+        //    dataType = (DataType)Enum.Parse(typeof(DataType), cbx_datatype.Text);
+        //    string topic = tbx_topic.Text;
+
+        //    //unsubscribe
+        //    if (mqtt_uc.topics_subscribed.ContainsKey(topic) && mqtt_uc.mqttClient.IsConnected)
+        //        mqtt_uc.MQTTClient_Unubscribes(topic);
+
+        //    //update dictionnary
+        //    if (mqtt_uc.topics_subscribed.ContainsKey(topic))
+        //        mqtt_uc.topics_subscribed[topic] = ManageIncomingData;
+        //    else
+        //        mqtt_uc.topics_subscribed.Add(topic, ManageIncomingData);
+
+        //    //force connection & subscribe
+        //    if (!mqtt_uc.isConnected)
+        //        mqtt_uc.MQTTClient_Connect();
+        //    else
+        //    {
+        //        //subscribe
+        //        mqtt_uc.MQTTClient_Subscribes();
+        //    }
+        //}
+
+
+        //void ManageIncomingData(byte[]? data)
+        //{
+        //    if (data == null) return;
+
+        //    DateTime dateTime = DateTime.Now; // à utiliser !?!?
+
+        //    string txt;
+        //    switch (dataType)
+        //    {
+        //        case DataType._boolean:
+        //            txt = Encoding.Default.GetString(data);
+        //            bool val_bool = bool.Parse(txt);
+        //            txt = val_bool.ToString();
+        //            AddToMessageList(txt);
+        //            break;
+
+        //        case DataType._integer:
+        //            txt = Encoding.Default.GetString(data);
+        //            int val_int = int.Parse(txt);
+        //            txt = val_int.ToString();
+        //            AddToMessageList(txt);
+        //            break;
+
+        //        case DataType._long:
+        //            txt = Encoding.Default.GetString(data);
+        //            long val_long = long.Parse(txt);
+        //            txt = val_long.ToString();
+        //            AddToMessageList(txt);
+        //            break;
+
+        //        case DataType._float:
+        //            txt = Encoding.Default.GetString(data);
+        //            float val_float = float.Parse(txt);
+        //            txt = val_float.ToString();
+        //            AddToMessageList(txt);
+        //            break;
+
+        //        case DataType._double:
+        //            txt = Encoding.Default.GetString(data);
+        //            double val_double = double.Parse(txt);
+        //            txt = val_double.ToString();
+        //            AddToMessageList(txt);
+        //            break;
+
+        //        case DataType._string:
+        //            txt = Encoding.Default.GetString(data);
+        //            AddToMessageList(txt);
+        //            break;
+
+        //        case DataType._image:
+        //            DisplayImage(data);
+        //            break;
+
+        //        case DataType._image_with_metadatas:
+        //            DisplayImage(data);
+        //            DisplayMetaData(data);
+        //            break;
+
+        //        case DataType._image_with_json_in_metadata:
+        //            DisplayImage(data);
+        //            DisplayJsonFromMetaData(data);
+        //            break;
+
+        //        case DataType._vector3:
+        //            float[] vec3 = GetVector3FromByteArray(data);
+        //            txt = vec3[0].ToString() + " ; " +
+        //                  vec3[1].ToString() + " ; " +
+        //                  vec3[2].ToString();
+        //            AddToMessageList(txt);
+        //            break;
+
+        //        case DataType._color:
+
+        //            break;
+
+        //        default:
+        //            break;
+        //    }
+        //}
+
+        //void DisplayJsonFromMetaData(byte[] data)
+        //{
+        //    MemoryStream imageStream = new MemoryStream(data);
+        //    ExifData exif = new ExifData(imageStream);
+        //    exif.GetTagValue(ExifTag.ImageDescription, out string metadatas_json, StrCoding.Utf8);
+        //    Dispatcher.Invoke(() =>
+        //    {
+        //        ObjectExplorer.FillTreeView(tvw_json, metadatas_json, "JSON in ImageDescription");
+        //        ObjectExplorer.ExpandAll(tvw_json);
+        //    });
+        //}
+
+        //void DisplayMetaData(byte[] data)
+        //{
+        //    MemoryStream imageStream = new MemoryStream(data);
+        //    ExifData exif = new ExifData(imageStream);
+        //    exif.GetTagValue(ExifTag.ImageDescription, out string metadatas, StrCoding.Utf8);
+        //    AddToMessageList(metadatas);
+        //}
+
+        //void AddToMessageList(string txt)
+        //{
+        //    Dispatcher.Invoke(() =>
+        //    {
+        //        TextBlock tb = new TextBlock() { Text = txt };
+        //        _messages_recus.Insert(0, tb);
+        //    });
+        //}
+
+        //void DisplayImage(byte[] data)
+        //{
+        //    Dispatcher.Invoke(() =>
+        //    {
+        //        _bmp = ToImage(data);
+        //    });
+        //}
 
         float[] GetVector3FromByteArray(byte[] data)
         {
@@ -262,5 +270,6 @@ namespace MQTT_Subscriber
         {
 
         }
+
     }
 }

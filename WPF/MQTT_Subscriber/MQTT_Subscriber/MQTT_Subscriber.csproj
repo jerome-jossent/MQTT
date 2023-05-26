@@ -8,8 +8,21 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MongoDB.Bson" Version="2.19.0" />
-    <PackageReference Include="MongoDB.Driver" Version="2.19.0" />
+    <None Remove="Resources\Moins.png" />
+    <None Remove="Resources\Plus.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Resources\Moins.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\Plus.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="System.Drawing.Common" Version="7.0.0" />
   </ItemGroup>
 
