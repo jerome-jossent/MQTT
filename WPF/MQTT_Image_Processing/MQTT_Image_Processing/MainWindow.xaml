@@ -1,0 +1,23 @@
+﻿<Window
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MQTT_Image_Processing"
+        xmlns:MQTT_Manager_jjo="clr-namespace:MQTT_Manager_jjo;assembly=MQTT_Manager_jjo" x:Class="MQTT_Image_Processing.MainWindow"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <Grid>
+
+        <StackPanel>
+
+            <MQTT_Manager_jjo:MQTT_Manager_UC Margin="10,10,10,0" VerticalAlignment="Top"/>
+
+            <MQTT_Manager_jjo:MQTT_Topic_UC Margin="10,5,10,0" parameter_name="Crop left" dataType="_integer" x:Name="crop_left" />
+            <MQTT_Manager_jjo:MQTT_Topic_UC Margin="10,5,10,0" parameter_name="Crop right" dataType="_integer" x:Name="crop_right" />
+            <MQTT_Manager_jjo:MQTT_Topic_UC Margin="10,5,10,0" parameter_name="Crop top" dataType="_integer" x:Name="crop_top"/>
+            <MQTT_Manager_jjo:MQTT_Topic_UC Margin="10,5,10,0" parameter_name="Crop bottom" dataType="_integer" x:Name="crop_bottom"/>
+
+        </StackPanel>
+    </Grid>
+</Window>

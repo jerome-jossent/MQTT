@@ -10,6 +10,7 @@
     <None Remove="Resources\corbeille grise.png" />
     <None Remove="Resources\device_connect.png" />
     <None Remove="Resources\device_disconnect.png" />
+    <None Remove="Resources\Lecture.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -22,9 +23,13 @@
     <Resource Include="Resources\device_disconnect.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
+    <Resource Include="Resources\Lecture.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Extended.Wpf.Toolkit" Version="4.5.0" />
     <PackageReference Include="MQTTnet" Version="4.2.0.706" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="System.Drawing.Common" Version="7.0.0" />
