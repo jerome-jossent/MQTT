@@ -23,6 +23,9 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Threading;
 
+using AForge.Video;
+using AForge.Video.DirectShow;
+
 namespace MQTT_Video_Publisher
 {
     public partial class MainWindow : System.Windows.Window, INotifyPropertyChanged
@@ -42,17 +45,26 @@ namespace MQTT_Video_Publisher
             }
             set
             {
-                if (_videoCapture.PosFrames != value)
-                {
-                    _videoCapture.PosFrames = value;
-                    OnPropertyChanged();
-                }
+                if (_videoCapture.PosFrames == value) return;
+                _videoCapture.PosFrames = value;
+                OnPropertyChanged();
             }
         }
 
-
         MQTTnet.Client.IMqttClient mqttClient;
-        public string topic_FrameSended = "video/frame/data";
+
+        public string topic_FrameSended
+        {
+            get { return _topic_FrameSended; }
+            set
+            {
+                if (_topic_FrameSended == value) return;
+                _topic_FrameSended = value;
+                OnPropertyChanged();
+            }
+        }
+        string _topic_FrameSended = "video/frame/data";
+
         Dictionary<string, Action<byte[]?>> topics_subscribed;
 
         VideoCapture _videoCapture;
@@ -74,9 +86,72 @@ namespace MQTT_Video_Publisher
 
             Fill_cbx_ips();
             INIT_topics();
+            INIT_capturedevices();
             INIT_videoplayer();
         }
 
+        Dictionary<string, FilterInfo> devices;
+        Dictionary<string, VideoCapabilities> devices_resolution;
+        Dictionary<string, int> devices_index;
+        VideoCapabilities res;
+
+        private void INIT_capturedevices()
+        {
+            cbx_capture_devices.Items.Clear();
+            devices = new Dictionary<string, FilterInfo>();
+            devices_index = new Dictionary<string, int>();
+
+            FilterInfoCollection videoDevices = new FilterInfoCollection(FilterCategory.VideoInputDevice);
+
+            // Parcourir la liste des périphériques vidéo
+            for (int i = 0; i < videoDevices.Count; i++)
+            {
+                FilterInfo device = videoDevices[i];
+                cbx_capture_devices.Items.Add(device.Name);
+                devices.Add(device.Name, device);
+                devices_index.Add(device.Name, i + 700);
+            }
+        }
+        string capture_device_name;
+        int capture_device_index;
+        private void cbx_capture_devices_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            capture_device_name = cbx_capture_devices.SelectedValue.ToString();
+            capture_device_index = devices_index[capture_device_name];
+            FilterInfo device = devices[capture_device_name];
+
+            // Créer une instance de la classe VideoCaptureDevice pour le périphérique vidéo actuel
+            VideoCaptureDevice videoSource = new VideoCaptureDevice(device.MonikerString);
+
+            // Récupérer les résolutions supportées par le périphérique
+            VideoCapabilities[] videoCapabilities = videoSource.VideoCapabilities;
+            devices_resolution = new Dictionary<string, VideoCapabilities>();
+            foreach (VideoCapabilities capability in videoCapabilities)
+            {
+                string txt = capability.FrameSize.Width + "x" + capability.FrameSize.Height + " [" + capability.MaximumFrameRate + "fps]";
+                cbx_capture_device_resolution.Items.Add(txt);
+                devices_resolution.Add(txt, capability);
+            }
+        }
+
+        private void cbx_capture_device_resolution_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            string resname = cbx_capture_device_resolution.SelectedValue as string;
+            res = devices_resolution[resname];
+        }
+
+        private void btn_video_capture_play_Click(object sender, MouseButtonEventArgs e)
+        {
+            is_video_pausing = false;
+            if (!is_video_playing)
+                CaptureVideo_PlayAndPublish();
+            btn_video_capture_play.Visibility = Visibility.Hidden;
+        }
+        private void btn_video_capture_pause_Click(object sender, MouseButtonEventArgs e)
+        {
+            is_video_pausing = true;
+            btn_video_capture_play.Visibility = Visibility.Visible;
+        }
 
         void INIT_topics()
         {
@@ -150,7 +225,7 @@ namespace MQTT_Video_Publisher
 
         void videoplayer_Tick(object? sender, EventArgs e)
         {
-            if ((_videoCapture != null) && (_videoCapture.FrameCount > 0) && (!userIsDraggingSlider))
+            if ((_videoCapture != null) && !_videoCapture.IsDisposed && (_videoCapture.FrameCount > 0) && (!userIsDraggingSlider))
             {
                 Dispatcher.BeginInvoke(() =>
                 {
@@ -182,7 +257,7 @@ namespace MQTT_Video_Publisher
             userIsDraggingSlider = false;
             //mePlayer.Position = TimeSpan.FromSeconds(slider_video.Value);
             _videoCapture.Set(VideoCaptureProperties.PosFrames, slider_video.Value);
-//            _videoCapture.PosFrames = (int)slider_video.Value;
+            //            _videoCapture.PosFrames = (int)slider_video.Value;
         }
 
         private void sliProgress_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -257,6 +332,7 @@ namespace MQTT_Video_Publisher
 
             var mqttClientOptions = new MQTTnet.Client.MqttClientOptionsBuilder()
                 .WithTcpServer(IP, port)
+                //.WithReceiveMaximum(1) // limite à 1 data dans le buffer, nécessite mqtt 5
                 .Build();
 
             mqttClient.ApplicationMessageReceivedAsync += MqttClient_ApplicationMessageReceivedAsync;
@@ -369,6 +445,19 @@ namespace MQTT_Video_Publisher
             MQTTClient_Disconnect();
         }
         #endregion
+        void CaptureVideo_PlayAndPublish()
+        {
+            Publish_CapturedVideo();
+        }
+
+        void Publish_CapturedVideo()
+        {
+            cts = new CancellationTokenSource();
+            Task task = new Task(() => { CaptureVideo_Thread(); }, cts.Token);
+            task.Start();
+        }
+
+        //-------------
 
         void Video_PlayAndPublish()
         {
@@ -519,9 +608,52 @@ namespace MQTT_Video_Publisher
             return newImageStream.ToArray();
         }
 
+        void CaptureVideo_Thread()
+        {
+            is_video_playing = true;
 
+            //webcam
+            _videoCapture = new VideoCapture(capture_device_index);
+            _videoCapture.FrameWidth = res.FrameSize.Width;
+            _videoCapture.FrameHeight = res.FrameSize.Height;
+            _videoCapture.Fps = res.FrameRate;
 
+            Mat frame = new Mat();
 
+            //for (int i = 0; i < res.FrameRate; i++)
+            //    _videoCapture.Read(frame);
+
+            DateTime t0 = DateTime.Now;
+            int nbcapturedframe = 0;
+
+            //mesure du temps entre frame pour effectuer une lecture "temps réel" de la vidéo
+            System.Diagnostics.Stopwatch watch = System.Diagnostics.Stopwatch.StartNew();
+            while (is_video_playing && !cts.IsCancellationRequested)
+            {
+                //capture de l'image
+                _videoCapture.Read(frame);
+                nbcapturedframe++;
+
+                //fin ou erreur ?
+                if (frame.Empty())
+                    continue;
+
+                //conversion en JPEG puis en byte array
+                Cv2.ImEncode(".jpg", frame, out byte[] data);
+
+                //ajout des metadatas
+                string metadatas = "{" +
+                    '"' + "frame" + '"' + ": " + nbcapturedframe +
+                    ", " + '"' + "time_s" + '"' + ": " + (nbcapturedframe / _videoCapture.Fps).ToString("0.000").Replace(",", ".") +
+                    "}";
+                data = AddMetadatas(data, metadatas);
+
+                //publie l'image
+                MQTT_Publish(topic_FrameSended, data);
+            }
+            _videoCapture.Dispose();
+            PlayingVideoStop();
+        }
         #endregion
 
         //#region métadata image JPG

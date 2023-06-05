@@ -5,9 +5,13 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MQTT_Video_Publisher"
         mc:Ignorable="d"
-        Title="Video frame to MQTT" Height="180" Width="800" Closing="Window_Closing">
+        Title="Video frame to MQTT" Height="auto" Width="650" Closing="Window_Closing">
     <Grid Margin="5">
         <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="5"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="5"/>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="5"/>
             <RowDefinition Height="*"/>
@@ -51,74 +55,59 @@
 
         <Separator Grid.Row="1"/>
 
+        <!--TOPIC-->
+        <Grid Grid.Row="2" Margin="3">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="150"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Text="Topic"/>
+            <TextBox Grid.Column="1" Text="{Binding topic_FrameSended, UpdateSourceTrigger=PropertyChanged}" />
+        </Grid>
+
+        <Separator Grid.Row="3"/>
+
         <!--PUBLISH CASES-->
-        <StackPanel Grid.Row="2">
-            <!--Texte--><!--
+        <StackPanel Grid.Row="4">
+            <!--Image-->
             <Grid Margin="3">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="auto"/>
                     <ColumnDefinition Width="auto"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="texte/json"/>
-                <TextBox Grid.Column="1" Text="COUCOU :)" x:Name="tbx_text"/>
-                <CheckBox Grid.Column="2" x:Name="ckx_text" VerticalAlignment="Center" ToolTip="Retain"/>
-                <Button Grid.Column="3" Content="Publish" Click="Publish_texte_Click"/>
-            </Grid>
-            --><!--BOOL--><!--
-            <Grid Margin="3">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="150"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="auto"/>
-                    <ColumnDefinition Width="auto"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="bool"/>
-                <CheckBox Grid.Column="1" x:Name="ckb_booleen" VerticalAlignment="Center" HorizontalAlignment="Center" />
-                <CheckBox Grid.Column="2" x:Name="ckx_booleen" VerticalAlignment="Center" ToolTip="Retain"/>
-                <Button Grid.Column="3" Content="Publish" Click="Publish_bool_Click"/>
-            </Grid>
-            --><!--Entier--><!--
-            <Grid Margin="3">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="150"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="auto"/>
-                    <ColumnDefinition Width="auto"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="entier"/>
-                <TextBox Grid.Column="1" Text="456" x:Name="tbx_entier"/>
-                <CheckBox Grid.Column="2" x:Name="ckx_entier" VerticalAlignment="Center" ToolTip="Retain"/>
-                <Button Grid.Column="3" Content="Publish" Click="Publish_entier_Click"/>
-            </Grid>
-            --><!--Virgule--><!--
-            <Grid Margin="3">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="150"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="auto"/>
-                    <ColumnDefinition Width="auto"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="nbr virgule"/>
-                <TextBox Grid.Column="1" Text="897.244" x:Name="tbx_virgule"/>
-                <CheckBox Grid.Column="2" x:Name="ckx_virgule" VerticalAlignment="Center" ToolTip="Retain"/>
-                <Button  Grid.Column="3" Content="Publish" Click="Publish_virgule_Click"/>
-            </Grid>-->
+                <RadioButton Grid.Column="0" Content="Video capture"/>
+                <ComboBox Grid.Column="2" x:Name="cbx_capture_devices" SelectionChanged="cbx_capture_devices_SelectionChanged" />
+                <ComboBox Grid.Column="3" x:Name="cbx_capture_device_resolution" SelectionChanged="cbx_capture_device_resolution_SelectionChanged" />
 
-            <!--<Grid Margin="3">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="150"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="60"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="nbr virgule"/>
-                <Slider Grid.Column="1" Minimum="-1000" Maximum="1000" Value="666" ValueChanged="Slider_ValueChanged"/>
-                --><!--<TextBlock Grid.Column="2" Text="897.244" HorizontalAlignment="Center" x:Name="tbk_virgule" />--><!--
+                <Image Grid.Column="4" VerticalAlignment="Center" Margin="3,0" MouseDown="btn_video_capture_pause_Click" Source="/Resources/Pause.png" RenderOptions.BitmapScalingMode="Fant" Height="20"  />
+                <Image Grid.Column="4" VerticalAlignment="Center" Margin="3,0" x:Name="btn_video_capture_play"   MouseDown="btn_video_capture_play_Click" Source="/Resources/Lecture.png" RenderOptions.BitmapScalingMode="Fant" Height="20"  />
+                <Image Grid.Column="5" VerticalAlignment="Center" Margin="3,0" MouseDown="btn_video_stop_Click" Source="/Resources/Stop.png" RenderOptions.BitmapScalingMode="Fant" Height="20"  />
+
             </Grid>
 
-            <Separator/>-->
+            <Grid Margin="3">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="Frame :"/>
 
+                <TextBlock Grid.Column="4" Text="0/0" x:Name="capture_frames"/>
+            </Grid>
+
+
+        </StackPanel>
+
+        <Separator Grid.Row="5"/>
+        
+        <StackPanel Grid.Row="6">       
             <!--Image-->
             <Grid Margin="3">
                 <Grid.ColumnDefinitions>
@@ -128,7 +117,7 @@
                     <ColumnDefinition Width="auto"/>
                     <ColumnDefinition Width="auto"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="Video file"/>
+                <RadioButton Grid.Column="0" Content="Video file"/>
                 <Image Grid.Column="1" VerticalAlignment="Center" Margin="3,0" MouseDown="btn_pickfile" Source="/Resources/folder.png" RenderOptions.BitmapScalingMode="Fant" Height="20"  />
                 <TextBox Grid.Column="2" Text="C:\DATA\RAN\Saint Ouen\SAINT OUEN - DEST\Videos\Video004401.mpg" x:Name="tbx_videofile"/>
                 
@@ -153,71 +142,9 @@
             </Grid>
 
             <Grid Margin="3">
-                <!--<Slider x:Name="slider_video" Value="{Binding nbframe, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>-->
                 <Slider x:Name="slider_video" Value="{Binding nbframe}" Thumb.DragStarted="sliProgress_DragStarted"  Thumb.DragCompleted="sliProgress_DragCompleted" ValueChanged="sliProgress_ValueChanged" />
-
             </Grid>
-
-            <!--Image BIS--><!--
-            <Grid Margin="3">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="150"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="auto"/>
-                    <ColumnDefinition Width="auto"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="Image"/>
-                <TextBox Grid.Column="1" Text="D:\Mes Images\Pokemon - Dracaufeu vs Dracaufeu noir.jpg" x:Name="tbx_imageBIS"/>
-                <CheckBox Grid.Column="2" x:Name="ckx_imageBIS" VerticalAlignment="Center" ToolTip="Retain"/>
-                <Button Grid.Column="3" Content="Publish" Click="Publish_imageBIS_Click"/>
-            </Grid>
-
-
-            --><!--GeoImage--><!--
-            <Grid Margin="3">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="150"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="auto"/>
-                    <ColumnDefinition Width="auto"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="GeoImage"/>
-                <TextBox Grid.Column="1" Text="C:\PortiK\Debug_2023-01-17 a\138786156255_186997.jpg"  x:Name="tbx_geoimage"/>
-                <CheckBox Grid.Column="2" x:Name="ckx_geoimage" VerticalAlignment="Center" ToolTip="Retain"/>
-                <Button Grid.Column="3" Content="Publish" Click="Publish_geoimage_Click"/>
-            </Grid>
-
-            <Separator/>-->
-
-            <!--Webcam--><!--
-            <Grid Margin="3">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="150"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="auto"/>
-                    <ColumnDefinition Width="auto"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="Webcam"/>
-                <CheckBox Grid.Column="2" x:Name="ckx_webcam" VerticalAlignment="Center" ToolTip="Retain"/>
-                <Button Grid.Column="3" Content="Publish" Click="Publish_fluximage_webcam_Click"/>
-            </Grid>-->
-
-           
-            <!--<Separator/>
-
-            --><!--From Folder--><!--
-            <Grid Margin="3" IsEnabled="False">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="150"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="auto"/>
-                    <ColumnDefinition Width="auto"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="FromFolder"/>
-                <CheckBox Grid.Column="2" x:Name="ckx_fluximage_folder" VerticalAlignment="Center" ToolTip="Retain"/>
-                <Button Grid.Column="3" Content="Publish" Click="Publish_fluximage_folder_Click"/>
-            </Grid>-->
-
+            
         </StackPanel>
     </Grid>
 </Window>
