@@ -266,6 +266,14 @@ namespace MQTT_Manager_jjo
             mqttClient.PublishAsync(applicationMessage, System.Threading.CancellationToken.None).GetAwaiter().GetResult();
         }
 
+        public void MQTT_Publish(string topic, string text, bool retain = false)
+        {
+            if (mqttClient == null || !mqttClient.IsConnected)
+                return;
+            byte[] payload = Encoding.UTF8.GetBytes(text);
+            MQTT_Publish(topic, payload, retain);
+        }
+
         public void MQTTClient_Stop()
         {
             System.Threading.Thread.Sleep(50);

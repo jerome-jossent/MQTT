@@ -15,7 +15,6 @@ using Image = System.Drawing.Image;
 using CompactExifLib;
 using System.Runtime.CompilerServices;
 using MQTT_Manager_jjo;
-//using static System.Net.Mime.MediaTypeNames;
 
 namespace MQTT_Subscriber
 {
@@ -26,17 +25,6 @@ namespace MQTT_Subscriber
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
-
-        //public ObservableCollection<FrameworkElement> _messages_recus
-        //{
-        //    get { return messages_recus; }
-        //    set
-        //    {
-        //        messages_recus = value;
-        //        OnPropertyChanged();
-        //    }
-        //}
-        //ObservableCollection<FrameworkElement> messages_recus;
 
         public BitmapImage _bmp
         {

@@ -1,23 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 using CompactExifLib;
-using static MQTT_Manager_jjo.MQTT_One_Topic_Subscribed;
-using DataType = MQTT_Manager_jjo.MQTT_One_Topic_Subscribed.DataType;
+using static MQTT_Manager_jjo.MQTT_Enums;
 
 namespace MQTT_Manager_jjo
 {
@@ -94,6 +84,9 @@ namespace MQTT_Manager_jjo
 
             var mqtt_uc = objet.mqtt_uc;
 
+            if (mqtt_uc.topics_subscribed == null)
+                mqtt_uc.topics_subscribed = new Dictionary<string, Action<byte[]?>>();
+
             //unsubscribe
             if (mqtt_uc.topics_subscribed.ContainsKey(topic) && mqtt_uc.mqttClient.IsConnected)
                 mqtt_uc.MQTTClient_Unubscribes(topic);
@@ -108,10 +101,7 @@ namespace MQTT_Manager_jjo
             if (!mqtt_uc.isConnected)
                 mqtt_uc.MQTTClient_Connect();
             else
-            {
-                //subscribe
-                mqtt_uc.MQTTClient_Subscribes();
-            }
+                mqtt_uc.MQTTClient_Subscribes();            
         }
     }
 }

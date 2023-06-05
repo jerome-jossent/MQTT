@@ -1,28 +1,142 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using MQTT_Manager_jjo;
+using System;
+using System.Drawing;
+using System.IO;
+using System.Threading;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
+using System.Windows.Interop;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using System.Windows.Threading;
 
 namespace MQTT_Image_Processing
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window
     {
+        MQTT_One_Topic_Subscribed mqtt_crop;
+        MQTT_One_Topic_Subscribed mqtt_image;
+        float[] crop;
+        BitmapImage image;
+        OpenCvSharp.Mat mat;
+
         public MainWindow()
         {
             InitializeComponent();
+            INITS();
+        }
+
+        private void INITS()
+        {
+            mqtt_crop = new MQTT_One_Topic_Subscribed(mqtt_uc);
+            mqtt_image = new MQTT_One_Topic_Subscribed(mqtt_uc);
+
+            mqtt_crop_uc._Link(mqtt_crop);
+            mqtt_image_uc._Link(mqtt_image);
+
+            mqtt_image.newData += Mqtt_image_crop_newData;
+            mqtt_crop.newData += Mqtt_image_crop_newData;
+
+            //mqtt_crop_uc.tbx_topic
+        }
+
+        void Mqtt_image_crop_newData(object? sender, EventArgs e)
+        {
+            if (sender.GetType() == typeof(BitmapImage))
+            {
+                image = (BitmapImage)sender;
+                mat = OpenCvSharp.WpfExtensions.BitmapSourceConverter.ToMat(image);
+            }
+            if (sender.GetType() == typeof(float[]))
+                crop = (float[])sender;
+
+            if (image == null || crop == null) return;
+
+            App.Current.Dispatcher.BeginInvoke(DispatcherPriority.Normal, (SendOrPostCallback)delegate
+            {
+                CropImage(mat, crop);
+            }, null);
+        }
+
+        void CropImage(OpenCvSharp.Mat mat, float[] crop)
+        {
+            //            App.Current.Dispatcher.BeginInvoke(DispatcherPriority.Normal, (SendOrPostCallback)delegate            {
+
+            float left = crop[0];
+            float top = crop[1];
+            float right = crop[2];
+            float bottom = crop[3];
+
+            int W = mat.Cols;
+            int H = mat.Rows;
+
+            int x = (int)(left * W);
+            int y = (int)(top * H);
+
+            int w = (int)((right - left) * W);
+            int h = (int)((bottom - top) * H);
+
+            OpenCvSharp.Rect roi = new OpenCvSharp.Rect(x, y, w, h);
+
+            OpenCvSharp.Mat croppedMat = new OpenCvSharp.Mat(mat, roi);
+
+            BitmapSource bmp_src = OpenCvSharp.WpfExtensions.BitmapSourceConverter.ToBitmapSource(croppedMat);
+            byte[] data = BitmapSource2ByteArray(bmp_src);
+
+            //            BitmapImage bmp_img = BitmapSource2BitmapImage(bmp_src);
+
+            mqtt_uc.MQTT_Publish("cropped", data);
+            //           }, null);
+        }
+
+        static Bitmap BitmapImage2Bitmap(BitmapImage bitmapImage)
+        {
+            using (MemoryStream outStream = new MemoryStream())
+            {
+                BitmapEncoder enc = new BmpBitmapEncoder();
+                enc.Frames.Add(BitmapFrame.Create(bitmapImage));
+                enc.Save(outStream);
+                System.Drawing.Bitmap bitmap = new System.Drawing.Bitmap(outStream);
+
+                return new Bitmap(bitmap);
+            }
+        }
+
+        static BitmapImage Bitmap2BitmapImage(Bitmap bitmap)
+        {
+            BitmapSource i = Imaging.CreateBitmapSourceFromHBitmap(
+                           bitmap.GetHbitmap(),
+                           IntPtr.Zero,
+                           Int32Rect.Empty,
+                           BitmapSizeOptions.FromEmptyOptions());
+            return (BitmapImage)i;
+        }
+
+        static BitmapImage BitmapSource2BitmapImage(BitmapSource bitmapSource)
+        {
+
+            JpegBitmapEncoder encoder = new JpegBitmapEncoder();
+            MemoryStream memoryStream = new MemoryStream();
+            BitmapImage bImg = new BitmapImage();
+
+            encoder.Frames.Add(BitmapFrame.Create(bitmapSource));
+            encoder.Save(memoryStream);
+
+            memoryStream.Position = 0;
+            bImg.BeginInit();
+            bImg.StreamSource = memoryStream;
+            bImg.EndInit();
+
+            memoryStream.Close();
+
+            return bImg;
+        }
+
+        static byte[] BitmapSource2ByteArray(BitmapSource bitmapSource)
+        {
+            JpegBitmapEncoder encoder = new JpegBitmapEncoder();
+            MemoryStream memoryStream = new MemoryStream();
+            encoder.Frames.Add(BitmapFrame.Create(bitmapSource));
+            encoder.Save(memoryStream);
+            return memoryStream.GetBuffer();
         }
     }
 }

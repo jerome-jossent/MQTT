@@ -34,5 +34,29 @@ namespace MQTT_Manager_jjo.Properties {
                 this["IPs"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string topic {
+            get {
+                return ((string)(this["topic"]));
+            }
+            set {
+                this["topic"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool retain {
+            get {
+                return ((bool)(this["retain"]));
+            }
+            set {
+                this["retain"] = value;
+            }
+        }
     }
 }
