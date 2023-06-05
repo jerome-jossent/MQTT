@@ -34,6 +34,7 @@ namespace MQTT_Manager_jjo
         public MQTT_One_Topic_Subscribed_UC _Link(MQTT_One_Topic_Subscribed objet)
         {
             this.objet = objet;
+            objet._Link(this);
             return this;
         }
 

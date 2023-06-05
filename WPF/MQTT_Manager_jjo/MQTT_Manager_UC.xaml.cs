@@ -16,7 +16,6 @@ using System.Windows.Shapes;
 
 namespace MQTT_Manager_jjo
 {
-
     public partial class MQTT_Manager_UC : UserControl
     {
         public MQTTnet.Client.IMqttClient mqttClient;

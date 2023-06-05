@@ -16,14 +16,19 @@ namespace MQTT_Manager_jjo
         public DataType dataType;
 
         MQTT_One_Topic_Subscribed_UC _uc;
-      public  MQTT_Manager_UC mqtt_uc;
+        public MQTT_Manager_UC mqtt_uc;
 
         public MQTT_One_Topic_Subscribed(MQTT_Manager_UC mqtt_uc)
         {
             this.mqtt_uc = mqtt_uc;
         }
 
-       public void ManageIncomingData(byte[]? data)
+        internal void _Link(MQTT_One_Topic_Subscribed_UC mQTT_One_Topic_Subscribed_UC)
+        {
+            _uc = mQTT_One_Topic_Subscribed_UC;
+        }
+
+        public void ManageIncomingData(byte[]? data)
         {
             if (data == null) return;
 
@@ -126,9 +131,7 @@ namespace MQTT_Manager_jjo
         {
             using (MemoryStream ms = new MemoryStream(bytes))
             using (Image image = Image.FromStream(ms, true, true))
-            {
                 return (Image)image.Clone();
-            }
         }
 
         public BitmapImage ToImage(byte[] array)
