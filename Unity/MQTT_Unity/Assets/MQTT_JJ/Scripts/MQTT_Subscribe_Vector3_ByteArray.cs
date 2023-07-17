@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using static MqttMessage_jj;
 
-public class MQTT_Subscribe_Vector3_ByteArray : MQTT_JJ
+public class MQTT_Subscribe_Vector3_ByteArray : MonoBehaviour
 {
     public Vector3 _valeur;
     [SerializeField] TMPro.TMP_Text text;
@@ -14,7 +14,7 @@ public class MQTT_Subscribe_Vector3_ByteArray : MQTT_JJ
     float x, y, z;
 
     //spécifique à "vector 3"
-    internal override void _DecodeMessage(byte[] message)
+    internal  void _DecodeMessage(byte[] message)
     {
         try
         {

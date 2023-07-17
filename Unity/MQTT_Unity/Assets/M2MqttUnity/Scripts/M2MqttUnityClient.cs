@@ -58,7 +58,9 @@ namespace M2MqttUnity
         public string mqttUserName = null;
         [Tooltip("Password for the MQTT broker. Keep blank if no password is required.")]
         public string mqttPassword = null;
-        
+
+        public string _ClientID_JJ = null;
+
         /// <summary>
         /// Wrapped MQTT client
         /// </summary>
@@ -98,7 +100,8 @@ namespace M2MqttUnity
         {
             if (client != null)
             {
-                StartCoroutine(DoDisconnect());
+                // StartCoroutine(DoDisconnect());
+                DoDisconnect();
             }
         }
 
@@ -233,7 +236,26 @@ namespace M2MqttUnity
         {
             foreach (MqttMsgPublishEventArgs msg in backMessageQueue)
             {
-                DecodeMessage(msg.Topic, msg.Message);
+                try
+                {
+                    if (msg == null)
+                    {
+                        Debug.Log("MqttMsgPublishEventArgs VIDE !");
+                        break;
+                    }
+
+                    if (msg.Message == null)
+                    {
+                        Debug.Log("MqttMsgPublishEventArgs.Message VIDE !");
+                        break;
+                    }
+
+                    DecodeMessage(msg.Topic, msg.Message);
+                }
+                catch (Exception ex)
+                {
+                    Debug.Log("M2MqttUnityClient.ProcessMqttMessageBackgroundQueue : " + msg.Topic + " AVEC " + msg.Message + "\n" + ex.Message);
+                }
             }
             backMessageQueue.Clear();
         }
@@ -268,7 +290,7 @@ namespace M2MqttUnity
             // wait for the given delay
             yield return new WaitForSecondsRealtime(connectionDelay / 1000f);
             // leave some time to Unity to refresh the UI
-            yield return new WaitForEndOfFrame();
+            // yield return new WaitForEndOfFrame();
 
             // create client instance 
             if (client == null)
@@ -298,11 +320,16 @@ namespace M2MqttUnity
             OnConnecting();
 
             // leave some time to Unity to refresh the UI
-            yield return new WaitForEndOfFrame();
-            yield return new WaitForEndOfFrame();
+            //yield return new WaitForEndOfFrame();
+            //yield return new WaitForEndOfFrame();
 
             client.Settings.TimeoutOnConnection = timeoutOnConnection;
             string clientId = Guid.NewGuid().ToString();
+            if (_ClientID_JJ != null && _ClientID_JJ.Trim() != "")
+                clientId = _ClientID_JJ;
+
+            _ClientID_JJ = clientId;
+
             try
             {
                 client.Connect(clientId, mqttUserName, mqttPassword);
@@ -328,9 +355,10 @@ namespace M2MqttUnity
             }
         }
 
-        private IEnumerator DoDisconnect()
+        //private IEnumerator DoDisconnect()
+        private void DoDisconnect()
         {
-            yield return new WaitForEndOfFrame();
+            //yield return new WaitForEndOfFrame();
             CloseConnection();
             OnDisconnected();
         }
