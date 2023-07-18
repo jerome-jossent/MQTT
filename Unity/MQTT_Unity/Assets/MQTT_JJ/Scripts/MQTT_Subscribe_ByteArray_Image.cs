@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class MQTT_Subscribe_ByteArray_Image : MQTT_JJ
+public class MQTT_Subscribe_ByteArray_Image : MonoBehaviour
 {
     public Texture2D _texture;
     [SerializeField] RawImage rawimage;
@@ -20,7 +20,7 @@ public class MQTT_Subscribe_ByteArray_Image : MQTT_JJ
 
     protected new void Start()
     {
-        base.Start();
+        //base.Start();
         rect = rawimage.gameObject.GetComponent<RectTransform>();
         initialsize = new Vector2(rect.sizeDelta.x, rect.sizeDelta.y);
         t = Time.time;
@@ -29,7 +29,7 @@ public class MQTT_Subscribe_ByteArray_Image : MQTT_JJ
 
     protected new void Update()
     {
-        base.Update();
+        //base.Update();
         if (nextT > Time.time) return;
 
         nextT += p;
@@ -45,7 +45,7 @@ public class MQTT_Subscribe_ByteArray_Image : MQTT_JJ
     }
 
     //spécifique à "image"
-    internal override void _DecodeMessage(byte[] message)
+    internal void _DecodeMessage(byte[] message)
     {
         Texture2D tex = new Texture2D(2, 2);
         try

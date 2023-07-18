@@ -41,7 +41,6 @@ namespace M2MqttUnity.Examples
     /// </summary>
     public class M2MqttUnityTest : M2MqttUnityClient
     {
-
         [Tooltip("Set this to true to perform a testing cycle automatically on startup")]
         public bool autoTest = false;
         [Header("User Interface")]
@@ -54,9 +53,8 @@ namespace M2MqttUnity.Examples
         public Button testPublishButton;
         public Button clearButton;
 
-        private List<MqttMessage_jj> eventMessages = new List<MqttMessage_jj>();
+        private List<string> eventMessages = new List<string>();
         private bool updateUI = false;
-
 
         public void TestPublish()
         {
@@ -103,7 +101,6 @@ namespace M2MqttUnity.Examples
                 consoleInputField.text += msg + "\n";
                 updateUI = true;
             }
-            Debug.Log("AddUiMessage:" + msg);
         }
 
         protected override void OnConnecting()
@@ -126,9 +123,6 @@ namespace M2MqttUnity.Examples
         protected override void SubscribeTopics()
         {
             client.Subscribe(new string[] { "M2MQTT_Unity/test" }, new byte[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE });
-
-            client.Subscribe(new string[] { "buzzer/BUZZ" }, new byte[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE });
-            client.Subscribe(new string[] { "buzzer/NewPlayer" }, new byte[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE });
         }
 
         protected override void UnsubscribeTopics()
@@ -159,7 +153,7 @@ namespace M2MqttUnity.Examples
                 {
                     connectButton.interactable = true;
                     disconnectButton.interactable = false;
-                    if (testPublishButton != null) testPublishButton.interactable = false;
+                    testPublishButton.interactable = false;
                 }
             }
             else
@@ -210,9 +204,7 @@ namespace M2MqttUnity.Examples
         {
             string msg = System.Text.Encoding.UTF8.GetString(message);
             Debug.Log("Received: " + msg);
-            MqttMessage_jj m = new MqttMessage_jj(topic, msg);
-            StoreMessage(m);
-
+            StoreMessage(msg);
             if (topic == "M2MQTT_Unity/test")
             {
                 if (autoTest)
@@ -223,14 +215,14 @@ namespace M2MqttUnity.Examples
             }
         }
 
-        private void StoreMessage(MqttMessage_jj eventMsg)
+        private void StoreMessage(string eventMsg)
         {
             eventMessages.Add(eventMsg);
         }
 
-        public void ProcessMessage(MqttMessage_jj msg)
+        private void ProcessMessage(string msg)
         {
-            AddUiMessage("ProcessMessage (BASE): " + msg.message);
+            AddUiMessage("Received: " + msg);
         }
 
         protected override void Update()
@@ -239,13 +231,16 @@ namespace M2MqttUnity.Examples
 
             if (eventMessages.Count > 0)
             {
-                foreach (MqttMessage_jj msg in eventMessages)
+                foreach (string msg in eventMessages)
+                {
                     ProcessMessage(msg);
-
+                }
                 eventMessages.Clear();
             }
             if (updateUI)
+            {
                 UpdateUI();
+            }
         }
 
         private void OnDestroy()
