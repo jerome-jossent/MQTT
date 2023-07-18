@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MQTT_Publisher"
+             xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d"
         Title="MQTT PUBLISH OPENCV" Height="600" Width="550"
         Closing="Window_Closing"
@@ -247,7 +248,7 @@
             
             <Separator/>
 
-            <Grid Margin="3">
+            <!--<Grid Margin="3">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="150"/>
                     <ColumnDefinition Width="*"/>
@@ -255,6 +256,20 @@
                 </Grid.ColumnDefinitions>
                 <TextBlock Grid.Column="0" Text="Crop left"/>
                 <Slider Grid.Column="1" Minimum="0" Maximum="1" Value="0.5" x:Name="crop_left" ValueChanged="Slider_crop_ValueChanged"/>
+                <TextBlock Grid.Column="3" x:Name="tbk_crop_l" />
+            </Grid>-->
+            <Grid Margin="3">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="60"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="Crop left and right"/>
+
+                <xctk:RangeSlider Grid.Column="1" Minimum="0" Maximum="1" x:Name="crop_left_right" HigherValueChanged="Slider_crop_value_changed" LowerValueChanged="Slider_crop_value_changed"/>
+                
+                <!--<Slider Grid.Column="1" Minimum="0" Maximum="1" Value="0.5" x:Name="crop_right" ValueChanged="Slider_crop_ValueChanged"/>-->
+                <TextBlock Grid.Column="3" x:Name="tbk_crop_lr" />
             </Grid>
             <Grid Margin="3">
                 <Grid.ColumnDefinitions>
@@ -262,27 +277,12 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="60"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="Crop top"/>
-                <Slider Grid.Column="1" Minimum="0" Maximum="1" Value="0.5" x:Name="crop_top" ValueChanged="Slider_crop_ValueChanged"/>
+                <TextBlock Grid.Column="0" Text="Crop bottom and top"/>
+                <xctk:RangeSlider Grid.Column="1" Minimum="0" Maximum="1" x:Name="crop_bottom_top" HigherValueChanged="Slider_crop_value_changed" LowerValueChanged="Slider_crop_value_changed"/>
+                <TextBlock Grid.Column="3" x:Name="tbk_crop_bt" />
             </Grid>
-            <Grid Margin="3">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="150"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="60"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="Crop right"/>
-                <Slider Grid.Column="1" Minimum="0" Maximum="1" Value="0.5" x:Name="crop_right" ValueChanged="Slider_crop_ValueChanged"/>
-            </Grid>
-            <Grid Margin="3">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="150"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="60"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="Crop bottom"/>
-                <Slider Grid.Column="1" Minimum="0" Maximum="1" Value="0.5" x:Name="crop_bottom" ValueChanged="Slider_crop_ValueChanged"/>
-            </Grid>
+
+
         </StackPanel>
     </Grid>
 </Window>

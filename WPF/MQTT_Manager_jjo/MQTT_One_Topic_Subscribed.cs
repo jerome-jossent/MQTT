@@ -13,6 +13,7 @@ namespace MQTT_Manager_jjo
 
         MQTT_One_Topic_Subscribed_UC _uc;
         public MQTT_Manager_UC mqtt_uc;
+        public string _topic;
 
         public event EventHandler newData;
 

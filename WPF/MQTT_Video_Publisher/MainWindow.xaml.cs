@@ -613,7 +613,7 @@ namespace MQTT_Video_Publisher
             is_video_playing = true;
 
             //webcam
-            _videoCapture = new VideoCapture(capture_device_index);
+            _videoCapture = new VideoCapture(1);// capture_device_index);
             _videoCapture.FrameWidth = res.FrameSize.Width;
             _videoCapture.FrameHeight = res.FrameSize.Height;
             _videoCapture.Fps = res.FrameRate;

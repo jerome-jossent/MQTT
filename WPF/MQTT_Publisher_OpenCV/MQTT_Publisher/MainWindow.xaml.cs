@@ -276,8 +276,10 @@ namespace MQTT_Publisher
         {
             webcam_running = true;
 
-            VideoCapture _videoCapture = new VideoCapture(0);
-            _videoCapture.Open(0);
+            int indexdevice = 1;
+
+            VideoCapture _videoCapture = new VideoCapture(indexdevice);
+            _videoCapture.Open(indexdevice);
 
             _videoCapture.FrameWidth = 1920;
             _videoCapture.FrameHeight = 1080;
@@ -683,17 +685,42 @@ namespace MQTT_Publisher
             mqttClient.PublishAsync(applicationMessage, System.Threading.CancellationToken.None).GetAwaiter().GetResult();
         }
 
-        private void Slider_crop_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        //private void Slider_crop_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        //{
+        //    if (crop_left == null || crop_right == null || crop_top == null || crop_bottom == null) return;
+        //    if (tbk_crop_l == null || tbk_crop_r == null || tbk_crop_t == null || tbk_crop_b == null) return;
+
+        //    float l = (float)crop_left.Value;
+        //    float t = (float)crop_top.Value;
+        //    float b = (float)crop_bottom.Value;
+        //    float r = (float)crop_right.Value;
+
+        //    Publish_vector4("crop", l, t, r, b);
+
+        //    tbk_crop_l.Text = l.ToString();
+        //    tbk_crop_t.Text = t.ToString();
+        //    tbk_crop_b.Text = b.ToString();
+        //    tbk_crop_r.Text = r.ToString();
+
+        //    //Thickness margin = new Thickness(crop_left.Value, crop_top.Value, crop_right.Value, crop_bottom.Value);
+        //    //string margin_json = Newtonsoft.Json.JsonConvert.SerializeObject(margin);
+        //    //MQTT_Publish("crop", margin_json);
+        //}
+
+        private void Slider_crop_value_changed(object sender, RoutedEventArgs e)
         {
-            if (crop_left == null || crop_right == null || crop_top == null || crop_bottom == null) return;
+            if (crop_left_right == null || crop_bottom_top==null) return;
+            if (tbk_crop_lr == null || tbk_crop_bt == null ) return;
 
-            Publish_vector4("crop", (float)crop_left.Value, (float)crop_top.Value, (float)crop_right.Value, (float)crop_bottom.Value);
+            float l = (float)crop_left_right.LowerValue;
+            float r = (float)crop_left_right.HigherValue;
+            float b = (float)crop_bottom_top.HigherValue;
+            float t = (float)crop_bottom_top.LowerValue;
 
-            //Thickness margin = new Thickness(crop_left.Value, crop_top.Value, crop_right.Value, crop_bottom.Value);
-            //string margin_json = Newtonsoft.Json.JsonConvert.SerializeObject(margin);
-            //MQTT_Publish("crop", margin_json);
+            Publish_vector4("crop", l, t, r, b);
+
+            tbk_crop_lr.Text = l.ToString("0.###") + ";" + r.ToString("0.###");
+            tbk_crop_bt.Text = b.ToString("0.###") + ";" + t.ToString("0.###");
         }
-
-
     }
 }

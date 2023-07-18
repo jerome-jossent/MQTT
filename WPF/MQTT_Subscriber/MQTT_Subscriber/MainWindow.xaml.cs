@@ -63,6 +63,26 @@ namespace MQTT_Subscriber
                 lvw_sub.Items.Add(mots_uc);
             });
         }
+        private void SubscribeRemove(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            //item sélectionné
+            MQTT_One_Topic_Subscribed_UC mots_uc = lvw_sub.SelectedItem as MQTT_One_Topic_Subscribed_UC;
+            if (mots_uc == null) return;
+            MQTT_One_Topic_Subscribed mots = mots_uc._objet;
+            mqtt_uc.MQTTClient_Unubscribes(mots._topic);
+            lvw_sub.Items.Remove(mots_uc);
+        }
+
+        private void ListItemMoveUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+
+        }
+
+        private void ListItemMoveDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+
+        }
+
 
         //void btn_subscribe_Click(object sender, RoutedEventArgs e)
         //{
@@ -257,7 +277,6 @@ namespace MQTT_Subscriber
         void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
 
-        }
-
+        }               
     }
 }

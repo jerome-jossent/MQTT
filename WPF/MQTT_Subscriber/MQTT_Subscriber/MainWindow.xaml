@@ -11,18 +11,27 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
-            <RowDefinition Height="*"/>
             <RowDefinition Height="auto"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
         <MQTT_Manager_jjo:MQTT_Manager_UC Grid.Row="0" x:Name="mqtt_uc"/>
 
-        <ListView Grid.Row="1" x:Name="lvw_sub"/>
-
-        <StackPanel Grid.Row="2" Orientation="Horizontal">
-            <Image Margin="3" RenderOptions.BitmapScalingMode="Fant" Source="/Resources/Plus.png" Height="15" MouseDown="SubscribeAdd"/>
-        </StackPanel>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            
+            <Image Margin="3" RenderOptions.BitmapScalingMode="Fant" Grid.Column="0" HorizontalAlignment="Left" Source="/Resources/Plus.png" Height="15" MouseDown="SubscribeAdd"/>
+            <Image Margin="3" RenderOptions.BitmapScalingMode="Fant" Grid.Column="1" HorizontalAlignment="Right" Source="/Resources/Fleche Haut.png" Height="15" MouseDown="ListItemMoveUp"/>
+            <Image Margin="3" RenderOptions.BitmapScalingMode="Fant" Grid.Column="2" HorizontalAlignment="Left" Source="/Resources/Fleche Bas.png" Height="15" MouseDown="ListItemMoveDown"/>
+            <Image Margin="3" RenderOptions.BitmapScalingMode="Fant" Grid.Column="3" HorizontalAlignment="Right" Source="/Resources/Moins.png" Height="15" MouseDown="SubscribeRemove"/>
+        </Grid>
         
+        <ListView Grid.Row="2" x:Name="lvw_sub"/>
         
         <!--<Grid Grid.Row="1">
             <Grid.ColumnDefinitions>

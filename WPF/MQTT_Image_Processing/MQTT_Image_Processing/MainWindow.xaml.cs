@@ -1,5 +1,6 @@
 ﻿using MQTT_Manager_jjo;
 using System;
+using System.Diagnostics.Eventing.Reader;
 using System.Drawing;
 using System.IO;
 using System.Threading;
@@ -74,9 +75,15 @@ namespace MQTT_Image_Processing
             int w = (int)((right - left) * W);
             int h = (int)((bottom - top) * H);
 
-            OpenCvSharp.Rect roi = new OpenCvSharp.Rect(x, y, w, h);
-
-            OpenCvSharp.Mat croppedMat = new OpenCvSharp.Mat(mat, roi);
+            OpenCvSharp.Mat croppedMat;
+            if (w < 1 || h < 1)
+                //error image
+                croppedMat = new OpenCvSharp.Mat(32, 32, OpenCvSharp.MatType.CV_8UC3, new OpenCvSharp.Scalar(1, 0, 0));
+            else
+            {
+                OpenCvSharp.Rect roi = new OpenCvSharp.Rect(x, y, w, h);
+                croppedMat = new OpenCvSharp.Mat(mat, roi);
+            }
 
             BitmapSource bmp_src = OpenCvSharp.WpfExtensions.BitmapSourceConverter.ToBitmapSource(croppedMat);
             byte[] data = BitmapSource2ByteArray(bmp_src);

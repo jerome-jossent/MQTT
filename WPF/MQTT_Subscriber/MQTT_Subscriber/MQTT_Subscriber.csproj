@@ -5,14 +5,18 @@
     <TargetFramework>net7.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
+    <ApplicationIcon>MQTT.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Resources\Fleche Bas.png" />
+    <None Remove="Resources\Fleche Haut.png" />
     <None Remove="Resources\Moins.png" />
     <None Remove="Resources\Plus.png" />
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="MQTT.ico" />
     <Content Include="Resources\Moins.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -28,6 +32,15 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\MQTT_Manager_jjo\MQTT_Manager_jjo.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\Fleche Haut.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="Resources\Fleche Bas.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
 
 </Project>

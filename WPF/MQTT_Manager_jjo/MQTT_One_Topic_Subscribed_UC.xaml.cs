@@ -13,7 +13,7 @@ namespace MQTT_Manager_jjo
 {
     public partial class MQTT_One_Topic_Subscribed_UC : UserControl
     {
-        public MQTT_One_Topic_Subscribed objet;
+        public MQTT_One_Topic_Subscribed _objet;
 
         public MQTT_One_Topic_Subscribed_UC()
         {
@@ -23,7 +23,7 @@ namespace MQTT_Manager_jjo
 
         public MQTT_One_Topic_Subscribed_UC _Link(MQTT_One_Topic_Subscribed objet)
         {
-            this.objet = objet;
+            this._objet = objet;
             objet._Link(this);
             return this;
         }
@@ -79,29 +79,41 @@ namespace MQTT_Manager_jjo
 
         void btn_subscribe_Click(object sender, RoutedEventArgs e)
         {
-            objet.dataType = (DataType)Enum.Parse(typeof(DataType), cbx_datatype.Text);
-            string topic = tbx_topic.Text;
+            if (cbx_datatype.Text == "") return;
 
-            var mqtt_uc = objet.mqtt_uc;
+            _objet.dataType = (DataType)Enum.Parse(typeof(DataType), cbx_datatype.Text);
+            _objet._topic = tbx_topic.Text;
+
+            var mqtt_uc = _objet.mqtt_uc;
 
             if (mqtt_uc.topics_subscribed == null)
                 mqtt_uc.topics_subscribed = new Dictionary<string, Action<byte[]?>>();
 
             //unsubscribe
-            if (mqtt_uc.topics_subscribed.ContainsKey(topic) && mqtt_uc.mqttClient.IsConnected)
-                mqtt_uc.MQTTClient_Unubscribes(topic);
+            if (mqtt_uc.topics_subscribed.ContainsKey(_objet._topic) && mqtt_uc.mqttClient.IsConnected)
+                mqtt_uc.MQTTClient_Unubscribes(_objet._topic);
 
             //update dictionnary
-            if (mqtt_uc.topics_subscribed.ContainsKey(topic))
-                mqtt_uc.topics_subscribed[topic] = objet.ManageIncomingData;
+            if (mqtt_uc.topics_subscribed.ContainsKey(_objet._topic))
+                mqtt_uc.topics_subscribed[_objet._topic] = _objet.ManageIncomingData;
             else
-                mqtt_uc.topics_subscribed.Add(topic, objet.ManageIncomingData);
+                mqtt_uc.topics_subscribed.Add(_objet._topic, _objet.ManageIncomingData);
 
             //force connection & subscribe
             if (!mqtt_uc.isConnected)
                 mqtt_uc.MQTTClient_Connect();
             else
-                mqtt_uc.MQTTClient_Subscribes();            
+                mqtt_uc.MQTTClient_Subscribes();
+
+            tbx_topic.IsEnabled = false;
+            btn_subscribe.IsEnabled = false;
+        }
+
+        void cbx_datatype_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            string typ = e.AddedItems[0].ToString();
+            //enable bouton
+            btn_subscribe.IsEnabled = (typ != "");
         }
     }
 }
