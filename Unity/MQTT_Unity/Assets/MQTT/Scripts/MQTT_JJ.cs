@@ -6,222 +6,76 @@ using System;
 using UnityEngine.Events;
 using System.Linq;
 using System.Text;
+using static MQTT_JJ_Message;
+using System.Collections;
 
 public class MQTT_JJ : M2MqttUnityClient
 {
-    #region QOS : Quality Of Service
-    public enum QOS_Level { AT_MOST_ONCE = 0, AT_LEAST_ONCE = 1, EXACTLY_ONCE = 2 }
-
-    byte QOS_Converter(QOS_Level level)
+    #region SINGLETON
+    static public MQTT_JJ _instance;
+    new void Awake()
     {
-        switch (level)
-        {
-            case QOS_Level.AT_LEAST_ONCE: return MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE;
-            case QOS_Level.EXACTLY_ONCE: return MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE;
-            case QOS_Level.AT_MOST_ONCE:
-            default:
-                return MqttMsgBase.QOS_LEVEL_AT_MOST_ONCE;
-        }
+        base.Awake();
+        if (_instance == null)
+            _instance = this;
+        else
+            Debug.Log("Warning : more than 1 MQTT client");
     }
     #endregion
-    public enum DataType { _bool, _int, _long, _float, _double, _string }
 
-    public bool autoReconnect_ifConnectionLost; //to test
+    public class Topic_Payload
+    {
+        public string topic;
+        public byte[] payload;
+    }
+    public class UnityEventNewData_QOS
+    {
+        public UnityEvent<byte[]> newData;
+        public QOS_Level qos;
+    }
+    public enum StatusType { none, disconnected, connecting, connected, connection_fail, connection_lost }
+
+    #region PARAMETERS
+    public bool autoReconnect_ifConnectionLost;
     bool reconnection_asked;
 
-    public enum StatusType { none, disconnected, connecting, connected, connection_fail, connection_lost }
     public StatusType _status
     {
         get { return status; }
         set
         {
             status = value;
-            StatusChanged?.Invoke(value);
+            _statusChanged?.Invoke(value);
+            statusType = _status.ToString();
         }
     }
     StatusType status;
-    public UnityEvent<StatusType> StatusChanged;
+    [SerializeField, ReadOnly] string statusType;
+    public UnityEvent<StatusType> _statusChanged;
 
-    [System.Serializable]
-    public class Topic
-    {
-        public string topic;
-        public bool retain = false;
-        public QOS_Level qos = QOS_Level.AT_MOST_ONCE;
-        public DataType dataType;
-    }
+    public bool isConnected { get { return _status == StatusType.connected; } }
 
-    [System.Serializable]
-    public class Topic_Sub : Topic
-    {
-        public UnityEvent<MQTT_JJ_Message> onNewMessage;
-    }
+    List<Topic_Payload> eventMessages = new List<Topic_Payload>();
+    object eventMessagesLock = new object();
 
-    //public class MQTTMessage_JJ
-    //{
-    //    public string topic;
-    //    public byte[] data;
-
-    //    internal bool? _GetDataAsBool()
-    //    {
-    //        if (data == null || data.Length == 0)
-    //            return null;
-    //        try
-    //        {
-    //            string result = System.Text.Encoding.UTF8.GetString(data);
-
-    //            if (result == "1") return true;
-    //            if (result == "0") return false;
-    //            if (result.ToLower() == "true") return true;
-    //            if (result.ToLower() == "false") return false;
-    //            return null;
-    //        }
-    //        catch (Exception ex)
-    //        {
-    //            Debug.LogException(ex);
-    //            return null;
-    //        }
-    //    }
-    //    internal string _GetDataAsString()
-    //    {
-    //        if (data == null || data.Length == 0)
-    //            return null;
-    //        try
-    //        {
-    //            return System.Text.Encoding.UTF8.GetString(data);
-    //        }
-    //        catch (Exception ex)
-    //        {
-    //            Debug.LogException(ex);
-    //            return null;
-    //        }
-    //    }
-    //    internal int? _GetDataAsInt32() { return int.TryParse(_GetDataAsString(), out int value) ? value : null; }
-    //    internal long? _GetDataAsLong() { return long.TryParse(_GetDataAsString(), out long value) ? value : null; }
-    //    internal float? _GetDataAsFloat() { return float.TryParse(_GetDataAsString(), out float value) ? value : null; }
-    //    internal double? _GetDataAsDouble() { return double.TryParse(_GetDataAsString(), out double value) ? value : null; }
-
-    //    internal void DebugLogErrorWithThis()
-    //    {
-    //        Debug.Log("Erreur sur le topic \"" + topic + "\" avec : " + _GetDataAsString());
-    //    }
-
-    //    public override string ToString()
-    //    {
-    //        return topic + ":" + _GetDataAsString();
-    //    }
-    //}
-
-    List<MQTT_JJ_Message> eventMessages = new List<MQTT_JJ_Message>();
-
-    public Dictionary<string, List<Action<MQTT_JJ_Message>>> topics_subscribed = new Dictionary<string, List<Action<MQTT_JJ_Message>>>();
-    public Dictionary<string, List<UnityEvent<MQTT_JJ_Message>>> topics_subscribed_unityevent = new Dictionary<string, List<UnityEvent<MQTT_JJ_Message>>>();
+    public Dictionary<string, List<UnityEventNewData_QOS>> topics_subscribed_unityevent = new Dictionary<string, List<UnityEventNewData_QOS>>();
     public string[] topics_readonly;
+    #endregion 
 
     protected override void Start()
     {
         _status = StatusType.none;
-        if (brokerAddress == "")
-            brokerAddress = MQTT_JJ_static_Parameters._GetString(MQTT_JJ_static_Parameters.PlayerPrefNames.MQTT_IP);
-
-        if (brokerPort == 0)
-            brokerPort = int.Parse(MQTT_JJ_static_Parameters._GetString(MQTT_JJ_static_Parameters.PlayerPrefNames.MQTT_Port, "0"));
-
-        if (_ClientID_JJ == "")
-            _ClientID_JJ = MQTT_JJ_static_Parameters._GetString(MQTT_JJ_static_Parameters.PlayerPrefNames.MQTT_ID);
+        _LoadBrokerConfigurationFromSavedParameters();
 
         base.Start();
+
+        StartIncomingMessageManager();
     }
 
-    /// <summary>
-    /// WARNING QOS NON SAUVEGARDE !! en cas de re-subscribe...
-    /// </summary>
-    /// <param name="topic"></param>
-    /// <param name="mqtt_newMessage"></param>
-    /// <param name="qosLevel"></param>
-    public void _SubscribeTopic(string topic, Action<MQTT_JJ_Message> mqtt_newMessage, QOS_Level qosLevel = QOS_Level.AT_MOST_ONCE)
+    void OnDestroy()
     {
-        client.Subscribe(new string[] { topic }, new byte[] { QOS_Converter(qosLevel) });
-
-        if (!topics_subscribed.ContainsKey(topic))
-            topics_subscribed.Add(topic, new List<Action<MQTT_JJ_Message>>());
-
-        if (!topics_subscribed[topic].Contains(mqtt_newMessage))
-            topics_subscribed[topic].Add(mqtt_newMessage);
-
-        Update_topics_readonly();
+        Disconnect();
     }
-
-    public void _SubscribeTopic(string topic, UnityEvent<MQTT_JJ_Message> onNewMessage, QOS_Level qosLevel = QOS_Level.AT_MOST_ONCE)
-    {
-        client.Subscribe(new string[] { topic }, new byte[] { QOS_Converter(qosLevel) });
-
-        if (!topics_subscribed_unityevent.ContainsKey(topic))
-            topics_subscribed_unityevent.Add(topic, new List<UnityEvent<MQTT_JJ_Message>>());
-
-        if (!topics_subscribed_unityevent[topic].Contains(onNewMessage))
-            topics_subscribed_unityevent[topic].Add(onNewMessage);
-
-        Update_topics_readonly();
-    }
-
-    public void _UnsubscribeTopic(string topic)
-    {
-        client.Unsubscribe(new string[] { topic });
-        if (topics_subscribed_unityevent.ContainsKey(topic))
-            topics_subscribed_unityevent.Remove(topic);
-
-        if (topics_subscribed.ContainsKey(topic))
-            topics_subscribed.Remove(topic);
-
-        Update_topics_readonly();
-    }
-
-    void Update_topics_readonly()
-    {
-        topics_readonly = topics_subscribed.Keys.Concat(topics_subscribed_unityevent.Keys).ToArray();
-    }
-
-    #region PUBLISH
-    public void Publish(Topic topic, bool val)
-    {
-        string message_txt = val ? "true" : "false";
-        Publish(topic, message_txt);
-    }
-
-    public void Publish(Topic topic, int val)
-    {
-        string message_txt = val.ToString();
-        Publish(topic, message_txt);
-    }
-    public void Publish(Topic topic, long val)
-    {
-        string message_txt = val.ToString();
-        Publish(topic, message_txt);
-    }
-    public void Publish(Topic topic, float val)
-    {
-        string message_txt = val.ToString();
-        Publish(topic, message_txt);
-    }
-    public void Publish(Topic topic, double val)
-    {
-        string message_txt = val.ToString();
-        Publish(topic, message_txt);
-    }
-
-    public void Publish(Topic topic, string message_txt)
-    {
-        byte[] message = Encoding.UTF8.GetBytes(message_txt);
-        Publish(topic, message);
-    }
-
-    public void Publish(Topic topic, byte[] message)
-    {
-        if (client == null || !client.IsConnected) return;
-        client.Publish(topic.topic, message, QOS_Converter(topic.qos), topic.retain);
-    }
-    #endregion
 
     public override void Connect()
     {
@@ -232,81 +86,59 @@ public class MQTT_JJ : M2MqttUnityClient
     public void _ResetConnection()
     {
         Disconnect();
-
-        brokerAddress = MQTT_JJ_static_Parameters._GetString(MQTT_JJ_static_Parameters.PlayerPrefNames.MQTT_IP);
-        brokerPort = int.Parse(MQTT_JJ_static_Parameters._GetString(MQTT_JJ_static_Parameters.PlayerPrefNames.MQTT_Port, "0"));
-        _ClientID_JJ = MQTT_JJ_static_Parameters._GetString(MQTT_JJ_static_Parameters.PlayerPrefNames.MQTT_ID);
-
+        _LoadBrokerConfigurationFromSavedParameters();
         Connect();
     }
 
+    public void _LoadBrokerConfigurationFromSavedParameters()
+    {
+        if (brokerAddress == "")
+            brokerAddress = MQTT_JJ_static_Parameters._GetString(MQTT_JJ_static_Parameters.PlayerPrefNames.MQTT_IP);
+
+        if (brokerPort == 0)
+            brokerPort = int.Parse(MQTT_JJ_static_Parameters._GetString(MQTT_JJ_static_Parameters.PlayerPrefNames.MQTT_Port, "0"));
+
+        if (_ClientID_JJ == "")
+            _ClientID_JJ = MQTT_JJ_static_Parameters._GetString(MQTT_JJ_static_Parameters.PlayerPrefNames.MQTT_ID);
+    }
+
+    #region MQTT Event
     protected override void OnConnecting()
     {
         _status = StatusType.connecting;
-        //DebugToScrollView._instance?._Print($"Connecting to broker on {brokerAddress}:{brokerPort}...", true);
+        base.OnConnecting();
     }
 
     protected override void OnConnected()
     {
         _status = StatusType.connected;
-        //DebugToScrollView._instance?._Print($"Connected to broker on {brokerAddress}:{brokerPort}", false);
-        base.OnConnected(); // SubscribeTopics !!
+        //base.OnConnected(); // SubscribeTopics, mais pas gérer de la même manière, donc ne sert pas  !!
+        Debug.LogFormat("Connected to {0}:{1}...\n", brokerAddress, brokerPort.ToString()); // pour être sûr
 
         if (autoReconnect_ifConnectionLost && reconnection_asked)
         {
             reconnection_asked = false;
-
-            //unsubscribe all
             UnsubscribeTopics();
-
-            //subscribe all
-            foreach (var item in topics_subscribed)
-            {
-                string topic = item.Key;
-                foreach (Action<MQTT_JJ_Message> item2 in item.Value)
-                    _SubscribeTopic(topic, item2);
-            }
-
-            foreach (var item in topics_subscribed_unityevent)
-            {
-                string topic = item.Key;
-                foreach (UnityEvent<MQTT_JJ_Message> item2 in item.Value)
-                    _SubscribeTopic(topic, item2);
-            }
         }
-    }
 
-    protected override void UnsubscribeTopics()
-    {
-        foreach (string topic in topics_subscribed.Keys)
-            client.Unsubscribe(new string[] { topic });
-        //topics_subscribed.Clear();
-
-        foreach (string topic in topics_subscribed_unityevent.Keys)
-            client.Unsubscribe(new string[] { topic });
-        //topics_subscribed_unityevent.Clear();
+        SubscribeTopics();
     }
 
     protected override void OnConnectionFailed(string errorMessage)
     {
         _status = StatusType.connection_fail;
-        //Debug.Log("OnConnectionFailed " + errorMessage);
-        //DebugToScrollView._instance?._Print("Connection failed : " + errorMessage, true);
         base.OnConnectionFailed(errorMessage);
     }
 
     protected override void OnDisconnected()
     {
         _status = StatusType.disconnected;
-        //Debug.Log("OnDisconnected");
-        //DebugToScrollView._instance?._Print("Disconnected", true);
+        base.OnDisconnected();
     }
 
     protected override void OnConnectionLost()
     {
         _status = StatusType.connection_lost;
-        //Debug.Log("OnConnectionLost");
-        //DebugToScrollView._instance?._Print("Connection lost", true);
         base.OnConnectionLost();
 
         if (autoReconnect_ifConnectionLost)
@@ -315,36 +147,145 @@ public class MQTT_JJ : M2MqttUnityClient
             base.Connect();
         }
     }
+    #endregion
 
-    protected override void DecodeMessage(string topic, byte[] message)
+    #region SUBSCRIBE/UNSUBSCRIBE
+    protected override void SubscribeTopics()
     {
-        eventMessages.Add(new MQTT_JJ_Message() { topic = topic, data = message });
-    }
-
-    protected override void Update()
-    {
-        base.Update();
-        if (eventMessages.Count > 0)
+        foreach (var item in topics_subscribed_unityevent)
         {
-            foreach (MQTT_JJ_Message msg in eventMessages)
-                ProcessMessage(msg);
-            eventMessages.Clear();
+            string topic = item.Key;
+            foreach (UnityEventNewData_QOS item2 in item.Value)
+                _SubscribeTopic(topic, item2.newData, item2.qos);
         }
     }
 
-    void ProcessMessage(MQTT_JJ_Message message)
+    protected override void UnsubscribeTopics()
     {
-        if (topics_subscribed.ContainsKey(message.topic))
-            foreach (Action<MQTT_JJ_Message> item in topics_subscribed[message.topic])
-                item.Invoke(message);
+        foreach (string topic in topics_subscribed_unityevent.Keys)
+            client.Unsubscribe(new string[] { topic });
+    }
 
+    //s'abonne maintenant ou s'abonnera à la connexion où cette méthode est exécutée automatiquement
+    public void _SubscribeTopic(string topic, UnityEvent<byte[]> onNewMessage, QOS_Level qos)
+    {
+        if (isConnected)
+        {
+            if (client == null)
+                Debug.Log("MQTT Client not ready !");
+            else
+                //Subscribed
+                client.Subscribe(new string[] { topic }, new byte[] { QOS_Converter(qos) });
+        }
+        else
+        {
+            //Subscribe for later
+            if (!topics_subscribed_unityevent.ContainsKey(topic))
+                topics_subscribed_unityevent.Add(topic, new List<UnityEventNewData_QOS>());
+
+            UnityEventNewData_QOS uend = new UnityEventNewData_QOS() { newData = onNewMessage, qos = qos };
+
+            if (!topics_subscribed_unityevent[topic].Contains(uend))
+                topics_subscribed_unityevent[topic].Add(uend);
+        }
+
+        Update_topics_readonly();
+    }
+
+    public void _UnsubscribeTopic(string topic)
+    {
+        client.Unsubscribe(new string[] { topic });
+        if (topics_subscribed_unityevent.ContainsKey(topic))
+            topics_subscribed_unityevent.Remove(topic);
+
+        Update_topics_readonly();
+    }
+
+    void Update_topics_readonly()
+    {
+        topics_readonly = topics_subscribed_unityevent.Keys.ToArray();
+    }
+    #endregion
+
+    #region Incoming Message Manager
+    protected override void DecodeMessage(string topic, byte[] message)
+    {
+        //empile incoming messages
+        lock (eventMessagesLock)
+        {
+            eventMessages.Add(new Topic_Payload() { topic = topic, payload = message });
+        }
+    }
+
+    void StartIncomingMessageManager()
+    {
+        StartCoroutine(SubscribedMessageHandler());
+    }
+
+    IEnumerator SubscribedMessageHandler()
+    {
+        //depile & dispatch incoming messages
+        while (isActiveAndEnabled)
+        {
+            if (eventMessages.Count > 0)
+            {
+                lock (eventMessagesLock)
+                {
+                    foreach (Topic_Payload msg in eventMessages)
+                        DispatchMessage(msg);
+                    eventMessages.Clear();
+                }
+            }
+            yield return new WaitForSeconds(0.001f);
+        }
+    }
+
+    void DispatchMessage(Topic_Payload message)
+    {
         if (topics_subscribed_unityevent.ContainsKey(message.topic))
-            foreach (UnityEvent<MQTT_JJ_Message> item in topics_subscribed_unityevent[message.topic])
-                item.Invoke(message);
+            foreach (UnityEventNewData_QOS item in topics_subscribed_unityevent[message.topic])
+                item.newData.Invoke(message.payload);
     }
+    #endregion
 
-    void OnDestroy()
-    {
-        Disconnect();
-    }
+    #region PUBLISH
+    //public void Publish(Topic topic, bool val)
+    //{
+    //    string message_txt = val ? "true" : "false";
+    //    Publish(topic, message_txt);
+    //}
+
+    //public void Publish(Topic topic, int val)
+    //{
+    //    string message_txt = val.ToString();
+    //    Publish(topic, message_txt);
+    //}
+    //public void Publish(Topic topic, long val)
+    //{
+    //    string message_txt = val.ToString();
+    //    Publish(topic, message_txt);
+    //}
+    //public void Publish(Topic topic, float val)
+    //{
+    //    string message_txt = val.ToString();
+    //    Publish(topic, message_txt);
+    //}
+    //public void Publish(Topic topic, double val)
+    //{
+    //    string message_txt = val.ToString();
+    //    Publish(topic, message_txt);
+    //}
+
+    //public void Publish(Topic topic, string message_txt)
+    //{
+    //    byte[] message = Encoding.UTF8.GetBytes(message_txt);
+    //    Publish(topic, message);
+    //}
+
+    //public void Publish(Topic topic, byte[] message)
+    //{
+    //    if (client == null || !client.IsConnected) return;
+    //    client.Publish(topic.topic, message, QOS_Converter(topic.qos), topic.retain);
+    //}
+    #endregion
 }

@@ -155,7 +155,7 @@ namespace MQTT_Publisher
         void Publish_vector3(float x, float y, float z)
         {
             byte[] data = CombomBinaryArray(BitConverter.GetBytes(x), BitConverter.GetBytes(y), BitConverter.GetBytes(z));
-            MQTT_Publish(topics[typetopic.vector3], data, ckx_virgule.IsChecked == true);
+            MQTT_Publish(topics[typetopic.vector3], data, ckx_vector3.IsChecked == true);
         }
         void Publish_vector3()
         {

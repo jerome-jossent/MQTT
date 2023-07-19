@@ -613,7 +613,7 @@ namespace MQTT_Video_Publisher
             is_video_playing = true;
 
             //webcam
-            _videoCapture = new VideoCapture(1);// capture_device_index);
+            _videoCapture = new VideoCapture(capture_device_index);
             _videoCapture.FrameWidth = res.FrameSize.Width;
             _videoCapture.FrameHeight = res.FrameSize.Height;
             _videoCapture.Fps = res.FrameRate;
@@ -650,9 +650,19 @@ namespace MQTT_Video_Publisher
 
                 //publie l'image
                 MQTT_Publish(topic_FrameSended, data);
+                
+                UpdateCapturedFrames(nbcapturedframe.ToString());
+
             }
             _videoCapture.Dispose();
             PlayingVideoStop();
+        }
+        void UpdateCapturedFrames(string message)
+        {
+            Dispatcher.BeginInvoke(() =>
+            {
+                capture_frames.Text = message;
+            }); 
         }
         #endregion
 
