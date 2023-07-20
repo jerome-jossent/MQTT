@@ -5,7 +5,6 @@ using UnityEngine.UI;
 
 public static class MQTT_JJ_static_Parameters
 {
-
     public enum PlayerPrefNames
     {
         MQTT_ID,

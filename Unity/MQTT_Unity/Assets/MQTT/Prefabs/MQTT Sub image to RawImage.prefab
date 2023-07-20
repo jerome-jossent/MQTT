@@ -89,7 +89,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   client: {fileID: 0}
-  topic: test\image
+  topic: test/image
   _datatype: 13
   qos: 0
   _textCodec: 5

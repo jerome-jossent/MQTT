@@ -9,19 +9,12 @@ using System.Text;
 using static MQTT_JJ_Message;
 using System.Collections;
 
-public class MQTT_JJ : M2MqttUnityClient
+public class MQTT_JJ_Client : M2MqttUnityClient
 {
-    #region SINGLETON
-    static public MQTT_JJ _instance;
-    new void Awake()
-    {
-        base.Awake();
-        if (_instance == null)
-            _instance = this;
-        else
-            Debug.Log("Warning : more than 1 MQTT client");
-    }
-    #endregion
+    static public MQTT_JJ_Client _instance;
+    
+
+
 
     public class Topic_Payload
     {
@@ -59,14 +52,25 @@ public class MQTT_JJ : M2MqttUnityClient
     object eventMessagesLock = new object();
 
     public Dictionary<string, List<UnityEventNewData_QOS>> topics_subscribed_unityevent = new Dictionary<string, List<UnityEventNewData_QOS>>();
-    public string[] topics_readonly;
-    #endregion 
+
+    [SerializeField, ReadOnly] string[] topics_readonly;
+    #endregion
+
+    protected override void Awake()
+    {
+        if (_instance == null)
+            _instance = this;
+        else
+            Debug.Log("Warning : more than 1 MQTT client");
+
+        base.Awake();
+        
+    }
 
     protected override void Start()
     {
         _status = StatusType.none;
         _LoadBrokerConfigurationFromSavedParameters();
-
         base.Start();
 
         StartIncomingMessageManager();
@@ -100,6 +104,9 @@ public class MQTT_JJ : M2MqttUnityClient
 
         if (_ClientID_JJ == "")
             _ClientID_JJ = MQTT_JJ_static_Parameters._GetString(MQTT_JJ_static_Parameters.PlayerPrefNames.MQTT_ID);
+
+        Debug.Log(brokerAddress);
+    
     }
 
     #region MQTT Event
@@ -276,7 +283,7 @@ public class MQTT_JJ : M2MqttUnityClient
     }
     public void Publish(MQTT_JJ_Message m, string message_txt)
     {
-        byte[] message =m.encoding.GetBytes(message_txt);
+        byte[] message = m.encoding.GetBytes(message_txt);
         Publish(m, message);
     }
     public void Publish(MQTT_JJ_Message m, byte[] message)

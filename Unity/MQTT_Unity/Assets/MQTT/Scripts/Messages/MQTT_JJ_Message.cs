@@ -9,14 +9,13 @@ public class MQTT_JJ_Message : MonoBehaviour
     public enum DataType
     {
         ByteArray,
-
-        Bool,
-        Int32,
-        Long,
-        Float,
-        Double,
-
         String,
+
+        Bool,           // TODO
+        Int32,          // TODO
+        Long,           // TODO
+        Float,          // TODO
+        Double,         // TODO
 
         String_Bool,
         String_Int32,
@@ -26,11 +25,12 @@ public class MQTT_JJ_Message : MonoBehaviour
 
         Vector3,
         Image_Texture2D,
+        Color_RGBA,
     }
 
     #region PARAMETERS
     [SerializeField, RequiredField(RequiredField.FieldColor.Green)]
-    public MQTT_JJ client;
+    public MQTT_JJ_Client client;
 
     public string topic;
 

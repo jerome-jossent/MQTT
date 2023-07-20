@@ -4,7 +4,7 @@ using System;
 
 public class MQTT_JJ_UI_Parameters : MonoBehaviour
 {
-    [SerializeField] MQTT_JJ mqtt;
+    [SerializeField] MQTT_JJ_Client mqtt;
 
     [SerializeField] TMP_InputField if_id;
     [SerializeField] TMP_InputField if_ip;
@@ -81,5 +81,7 @@ public class MQTT_JJ_UI_Parameters : MonoBehaviour
 
         mqtt.brokerAddress = if_ip.text;
         mqtt.brokerPort = int.Parse(if_port.text.Trim());
+
+        _Save_MQTT_Parameters();
     }
 }

@@ -2,9 +2,11 @@ using UnityEngine;
 
 public class UI_SetText : MonoBehaviour
 {
+    int text_version;
+
     UnityEngine.UI.Text text; //1
     TMPro.TMP_Text tmp_text;  //2
-    int text_version;
+    TMPro.TMP_InputField tmp_inputfield;  //3
 
     void Start()
     {
@@ -22,8 +24,15 @@ public class UI_SetText : MonoBehaviour
             return;
         }
 
+        tmp_inputfield = GetComponent<TMPro.TMP_InputField>();
+        if (tmp_inputfield != null)
+        {
+            text_version = 3;
+            return;
+        }
+
         text_version = 0;
-        Debug.Log("No UI Text or TMP_Text found ! Autodestroy component");
+        Debug.Log(gameObject.name + " : No Support found ! Autodestroy component");
         DestroyImmediate(this);
     }
 
@@ -41,6 +50,8 @@ public class UI_SetText : MonoBehaviour
     public void _SetText(Vector2? value) { _SetText(value.ToString()); }
     public void _SetText(Vector3 value) { _SetText(value.ToString()); }
     public void _SetText(Vector3? value) { _SetText(value.ToString()); }
+    public void _SetText(Color value) { _SetText(value.ToString()); }
+    public void _SetText(Color? value) { _SetText(value.ToString()); }
     public void _SetText(string txt)
     {
         if (txt == null) return;
@@ -49,6 +60,7 @@ public class UI_SetText : MonoBehaviour
         {
             case 1: text.text = txt; break;
             case 2: tmp_text.text = txt; break;
+            case 3: tmp_inputfield.text = txt; break;
         }
     }
 }
