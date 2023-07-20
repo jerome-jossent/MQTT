@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Markup;
 using System.Windows.Media;
 using CompactExifLib;
 using MQTT_Publisher_OpenCV.Properties;
@@ -19,7 +20,7 @@ namespace MQTT_Publisher
     {
         MQTTnet.Client.IMqttClient mqttClient;
 
-        enum typetopic { all, texte, booleen, entier, virgule, image, fluximages_webcam, fluximages_folder, geoimage, vector3 };
+        enum typetopic { all, texte, booleen, entier, virgule, image, fluximages_webcam, fluximages_folder, geoimage, vector3, colorRGBA };
         Dictionary<typetopic, string> topics;
 
         bool webcam_running;
@@ -79,15 +80,16 @@ namespace MQTT_Publisher
         void INIT_topics()
         {
             topics = new Dictionary<typetopic, string>();
-            topics.Add(typetopic.texte, "test\\string");
-            topics.Add(typetopic.booleen, "test\\bool");
-            topics.Add(typetopic.entier, "test\\int");
-            topics.Add(typetopic.virgule, "test\\float");
-            topics.Add(typetopic.image, "test\\image");
+            topics.Add(typetopic.texte, "test/string");
+            topics.Add(typetopic.booleen, "test/bool");
+            topics.Add(typetopic.entier, "test/int");
+            topics.Add(typetopic.virgule, "test/float");
+            topics.Add(typetopic.image, "test/image");
             topics.Add(typetopic.fluximages_webcam, "fluximages_webcam");
             topics.Add(typetopic.fluximages_folder, "fluximages_folder");
             topics.Add(typetopic.geoimage, "geoimage");
-            topics.Add(typetopic.vector3, "test\\vector3");
+            topics.Add(typetopic.vector3, "test/vector3");
+            topics.Add(typetopic.colorRGBA, "test/colorrgba");
         }
 
         void Publish_texte() { MQTT_Publish(topics[typetopic.texte], tbx_text.Text, ckx_text.IsChecked == true); }
@@ -170,6 +172,12 @@ namespace MQTT_Publisher
             byte[] data = CombomBinaryArray(BitConverter.GetBytes(x), BitConverter.GetBytes(y), BitConverter.GetBytes(z), BitConverter.GetBytes(w));
             MQTT_Publish(topic, data, retain);
         }
+
+        void Publish_color(string topic, byte[] data, bool retain=false)
+        {
+            MQTT_Publish(topic, data, retain);
+        }
+
 
         private byte[] CombomBinaryArray(byte[] srcArray1, byte[] srcArray2)
         {
@@ -709,8 +717,8 @@ namespace MQTT_Publisher
 
         private void Slider_crop_value_changed(object sender, RoutedEventArgs e)
         {
-            if (crop_left_right == null || crop_bottom_top==null) return;
-            if (tbk_crop_lr == null || tbk_crop_bt == null ) return;
+            if (crop_left_right == null || crop_bottom_top == null) return;
+            if (tbk_crop_lr == null || tbk_crop_bt == null) return;
 
             float l = (float)crop_left_right.LowerValue;
             float r = (float)crop_left_right.HigherValue;
@@ -721,6 +729,22 @@ namespace MQTT_Publisher
 
             tbk_crop_lr.Text = l.ToString("0.###") + ";" + r.ToString("0.###");
             tbk_crop_bt.Text = b.ToString("0.###") + ";" + t.ToString("0.###");
+        }
+
+        private void ColorPicker_SelectedColorChanged(object sender, RoutedPropertyChangedEventArgs<Color?> e)
+        {
+            if (e.NewValue == null) return;
+
+            Color color = (Color)e.NewValue;
+
+            byte[] bytes = new byte[4];
+            bytes[0] = color.R;
+            bytes[1] = color.G;
+            bytes[2] = color.B;
+            bytes[3] = color.A;
+
+            Publish_color(topics[typetopic.colorRGBA], bytes, false);
+            tbk_color.Text = color.ToString();
         }
     }
 }

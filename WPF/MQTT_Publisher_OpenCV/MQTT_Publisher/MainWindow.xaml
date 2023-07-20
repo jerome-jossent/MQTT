@@ -279,7 +279,19 @@
                 </Grid.ColumnDefinitions>
                 <TextBlock Grid.Column="0" Text="Crop bottom and top"/>
                 <xctk:RangeSlider Grid.Column="1" Minimum="0" Maximum="1" x:Name="crop_bottom_top" HigherValueChanged="Slider_crop_value_changed" LowerValueChanged="Slider_crop_value_changed"/>
-                <TextBlock Grid.Column="3" x:Name="tbk_crop_bt" />
+                <TextBlock Grid.Column="2" x:Name="tbk_crop_bt" />
+            </Grid>
+
+            <Separator/>
+            <Grid Margin="3">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="60"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="Crop bottom and top"/>
+                <xctk:ColorPicker Grid.Column="1" SelectedColorChanged="ColorPicker_SelectedColorChanged"/>
+                <TextBlock Grid.Column="2" x:Name="tbk_color" />
             </Grid>
 
 
