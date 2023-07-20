@@ -79,15 +79,15 @@ namespace MQTT_Publisher
         void INIT_topics()
         {
             topics = new Dictionary<typetopic, string>();
-            topics.Add(typetopic.texte, "texte");
-            topics.Add(typetopic.booleen, "booleen");
-            topics.Add(typetopic.entier, "entier");
-            topics.Add(typetopic.virgule, "virgule");
-            topics.Add(typetopic.image, "image");
+            topics.Add(typetopic.texte, "test\\string");
+            topics.Add(typetopic.booleen, "test\\bool");
+            topics.Add(typetopic.entier, "test\\int");
+            topics.Add(typetopic.virgule, "test\\float");
+            topics.Add(typetopic.image, "test\\image");
             topics.Add(typetopic.fluximages_webcam, "fluximages_webcam");
             topics.Add(typetopic.fluximages_folder, "fluximages_folder");
             topics.Add(typetopic.geoimage, "geoimage");
-            topics.Add(typetopic.vector3, "vector3");
+            topics.Add(typetopic.vector3, "test\\vector3");
         }
 
         void Publish_texte() { MQTT_Publish(topics[typetopic.texte], tbx_text.Text, ckx_text.IsChecked == true); }
@@ -267,8 +267,8 @@ namespace MQTT_Publisher
             if (cts != null)
             {
                 webcam_running = false;
-                cts.Cancel();
-                cts.Dispose();
+                cts?.Cancel();
+                cts?.Dispose();
             }
         }
 
@@ -276,14 +276,14 @@ namespace MQTT_Publisher
         {
             webcam_running = true;
 
-            int indexdevice = 1;
+            int indexdevice = 0;
 
             VideoCapture _videoCapture = new VideoCapture(indexdevice);
             _videoCapture.Open(indexdevice);
 
-            _videoCapture.FrameWidth = 1920;
-            _videoCapture.FrameHeight = 1080;
-            _videoCapture.Fps = 30;
+            //_videoCapture.FrameWidth = 1920;
+            //_videoCapture.FrameHeight = 1080;
+            //_videoCapture.Fps = 30;
             Mat frame = new Mat();
 
             DateTime t = DateTime.Now;
