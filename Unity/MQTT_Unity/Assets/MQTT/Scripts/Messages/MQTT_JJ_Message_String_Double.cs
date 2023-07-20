@@ -23,7 +23,17 @@ public class MQTT_JJ_Message_String_Double : MonoBehaviour
     void OnNewDouble(byte[] data)
     {
         m._NewData(data);
-        value = double.TryParse(m._StringData(), out double val) ? val : null;
+        double val;
+
+        string txt = m._StringData();
+        txt = txt.Replace(",", ".");
+        bool test = double.TryParse(txt, out val);
+        if (!test)
+        {
+            txt = txt.Replace(".", ",");
+            test = double.TryParse(txt, out val);
+        }
+        value = test ? val : null;
         onNewDouble?.Invoke(value);
     }
 }

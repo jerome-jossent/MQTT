@@ -249,43 +249,40 @@ public class MQTT_JJ : M2MqttUnityClient
     #endregion
 
     #region PUBLISH
-    //public void Publish(Topic topic, bool val)
-    //{
-    //    string message_txt = val ? "true" : "false";
-    //    Publish(topic, message_txt);
-    //}
-
-    //public void Publish(Topic topic, int val)
-    //{
-    //    string message_txt = val.ToString();
-    //    Publish(topic, message_txt);
-    //}
-    //public void Publish(Topic topic, long val)
-    //{
-    //    string message_txt = val.ToString();
-    //    Publish(topic, message_txt);
-    //}
-    //public void Publish(Topic topic, float val)
-    //{
-    //    string message_txt = val.ToString();
-    //    Publish(topic, message_txt);
-    //}
-    //public void Publish(Topic topic, double val)
-    //{
-    //    string message_txt = val.ToString();
-    //    Publish(topic, message_txt);
-    //}
-
-    //public void Publish(Topic topic, string message_txt)
-    //{
-    //    byte[] message = Encoding.UTF8.GetBytes(message_txt);
-    //    Publish(topic, message);
-    //}
-
-    //public void Publish(Topic topic, byte[] message)
-    //{
-    //    if (client == null || !client.IsConnected) return;
-    //    client.Publish(topic.topic, message, QOS_Converter(topic.qos), topic.retain);
-    //}
+    public void Publish(MQTT_JJ_Message m, bool val)
+    {
+        string message_txt = val ? "true" : "false";
+        Publish(m, message_txt);
+    }
+    public void Publish(MQTT_JJ_Message m, int val)
+    {
+        string message_txt = val.ToString();
+        Publish(m, message_txt);
+    }
+    public void Publish(MQTT_JJ_Message m, long val)
+    {
+        string message_txt = val.ToString();
+        Publish(m, message_txt);
+    }
+    public void Publish(MQTT_JJ_Message m, float val)
+    {
+        string message_txt = val.ToString();
+        Publish(m, message_txt);
+    }
+    public void Publish(MQTT_JJ_Message m, double val)
+    {
+        string message_txt = val.ToString();
+        Publish(m, message_txt);
+    }
+    public void Publish(MQTT_JJ_Message m, string message_txt)
+    {
+        byte[] message =m.encoding.GetBytes(message_txt);
+        Publish(m, message);
+    }
+    public void Publish(MQTT_JJ_Message m, byte[] message)
+    {
+        if (client == null || !client.IsConnected) return;
+        client.Publish(m.topic, message, QOS_Converter(m.qos), m.retain);
+    }
     #endregion
 }

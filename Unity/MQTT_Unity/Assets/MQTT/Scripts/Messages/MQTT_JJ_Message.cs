@@ -10,7 +10,7 @@ public class MQTT_JJ_Message : MonoBehaviour
     {
         ByteArray,
 
-        Bool, 
+        Bool,
         Int32,
         Long,
         Float,
@@ -24,7 +24,7 @@ public class MQTT_JJ_Message : MonoBehaviour
         String_Float,
         String_Double,
 
-        Vector3, 
+        Vector3,
         Image_Texture2D,
     }
 
@@ -43,7 +43,7 @@ public class MQTT_JJ_Message : MonoBehaviour
     string _string;
 
     public Encode _textCodec = Encode.UTF8;
-    System.Text.Encoding encoding
+    public System.Text.Encoding encoding
     {
         get
         {

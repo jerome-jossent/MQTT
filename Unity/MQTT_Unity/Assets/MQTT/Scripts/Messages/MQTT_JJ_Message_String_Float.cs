@@ -17,13 +17,23 @@ public class MQTT_JJ_Message_String_Float : MonoBehaviour
 
         UnityEvent<byte[]> a = new UnityEvent<byte[]>();
         a.AddListener(OnNewFloat);
-        m.client._SubscribeTopic(m.topic, a, m.qos);
+        m.client._SubscribeTopic(m.topic, a, m.qos);        
     }
 
     void OnNewFloat(byte[] data)
     {
         m._NewData(data);
-        value = float.TryParse(m._StringData(), out float val) ? val : null;
+        float val;
+
+        string txt = m._StringData();
+        txt = txt.Replace(",", ".");
+        bool test = float.TryParse(txt, out val);
+        if(!test)
+        {
+            txt = txt.Replace(".", ",");
+            test = float.TryParse(txt, out val);
+        }
+        value = test ? val : null;
         onNewFloat?.Invoke(value);
     }
 }
