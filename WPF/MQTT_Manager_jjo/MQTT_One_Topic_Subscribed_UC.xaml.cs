@@ -93,7 +93,7 @@ namespace MQTT_Manager_jjo
             if (mqtt_uc.topics_subscribed.ContainsKey(_objet._topic) && mqtt_uc.mqttClient.IsConnected)
                 mqtt_uc.MQTTClient_Unubscribes(_objet._topic);
 
-            //update dictionnary
+            //add or update dictionnary
             if (mqtt_uc.topics_subscribed.ContainsKey(_objet._topic))
                 mqtt_uc.topics_subscribed[_objet._topic] = _objet.ManageIncomingData;
             else

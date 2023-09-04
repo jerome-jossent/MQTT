@@ -1,30 +1,25 @@
-﻿using System;
+﻿using AForge.Video.DirectShow;
+using CompactExifLib;
+using Microsoft.VisualBasic;
+using Microsoft.Win32;
+using MQTTnet;
+using OpenCvSharp;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.Unicode;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-
-using MQTTnet;
-using OpenCvSharp;
-using CompactExifLib;
-using System.IO;
-using Microsoft.Win32;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using System.Windows.Threading;
-
-using AForge.Video;
-using AForge.Video.DirectShow;
 
 namespace MQTT_Video_Publisher
 {
@@ -35,6 +30,34 @@ namespace MQTT_Video_Publisher
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
         public event PropertyChangedEventHandler PropertyChanged;
+
+        public string topic_FrameSended
+        {
+            get { return _topic_FrameSended; }
+            set
+            {
+                if (_topic_FrameSended == value) return;
+                _topic_FrameSended = value;
+                Properties.Settings.Default["topic_FrameSended"] = _topic_FrameSended;
+                Properties.Settings.Default.Save();
+                OnPropertyChanged();
+            }
+        }
+        string _topic_FrameSended = (string)Properties.Settings.Default["topic_FrameSended"];
+
+        public string topic_Wait
+        {
+            get { return _topic_Wait; }
+            set
+            {
+                if (_topic_Wait == value) return;
+                _topic_Wait = value;
+                Properties.Settings.Default["topic_wait"] = _topic_Wait;
+                Properties.Settings.Default.Save();
+                OnPropertyChanged();
+            }
+        }
+        string _topic_Wait = (string)Properties.Settings.Default["topic_wait"];
 
         public int nbframe
         {
@@ -51,25 +74,67 @@ namespace MQTT_Video_Publisher
             }
         }
 
-        MQTTnet.Client.IMqttClient mqttClient;
-
-        public string topic_FrameSended
+        public string videofile
         {
-            get { return _topic_FrameSended; }
+            get => _videofile;
             set
             {
-                if (_topic_FrameSended == value) return;
-                _topic_FrameSended = value;
+                if (_videofile == value) return;
+                _videofile = value;
+                Properties.Settings.Default["videofile"] = _videofile;
+                Properties.Settings.Default.Save();
                 OnPropertyChanged();
             }
         }
-        string _topic_FrameSended = "video/frame/data";
+        string _videofile = (string)Properties.Settings.Default["videofile"];
 
+        public bool? videofile_loop
+        {
+            get => _videofile_loop;
+            set
+            {
+                if (value == _videofile_loop) return;
+                _videofile_loop = value;
+                Properties.Settings.Default["videofile_loop"] = (bool)_videofile_loop;
+                Properties.Settings.Default.Save();
+                OnPropertyChanged();
+            }
+        }
+
+
+        bool? _videofile_loop = (bool)Properties.Settings.Default["videofile_loop"];
+
+
+        MQTTnet.Client.IMqttClient mqttClient;
         Dictionary<string, Action<byte[]?>> topics_subscribed;
 
         VideoCapture _videoCapture;
         CancellationTokenSource cts;
-        bool nextframe;
+
+        public bool? nextframeToView
+        {
+            get => _nextframeToView; set
+            {
+                if (_nextframeToView == value)
+                    return;
+                _nextframeToView = value;
+                OnPropertyChanged();
+            }
+        }
+        bool? _nextframeToView = false;
+
+        public bool? nextframeToSend
+        {
+            get => _nextframeToSend; set
+            {
+                if (_nextframeToSend == value)
+                    return;
+                _nextframeToSend = value;
+                OnPropertyChanged();
+            }
+        }
+        bool? _nextframeToSend = false;
+
         bool is_video_playing;
         bool is_video_pausing;
         bool userIsDraggingSlider;
@@ -79,13 +144,14 @@ namespace MQTT_Video_Publisher
         string _IP;
         int _port;
 
+        bool sendNextFrame;
+
         public MainWindow()
         {
             InitializeComponent();
             DataContext = this;
 
             Fill_cbx_ips();
-            INIT_topics();
             INIT_capturedevices();
             INIT_videoplayer();
         }
@@ -153,11 +219,6 @@ namespace MQTT_Video_Publisher
             btn_video_capture_play.Visibility = Visibility.Visible;
         }
 
-        void INIT_topics()
-        {
-            topics_subscribed = new Dictionary<string, Action<byte[]?>>();
-            topics_subscribed["video/frame/next"] = NextFrame;
-        }
         void INIT_videoplayer()
         {
             DispatcherTimer timer = new DispatcherTimer();
@@ -167,7 +228,15 @@ namespace MQTT_Video_Publisher
         }
         void NextFrame(byte[]? data)
         {
-            nextframe = true;
+            string r = Encoding.UTF8.GetString(data).ToLower();
+            switch (r)
+            {
+                case "":
+                case "true":
+                case "1":
+                        sendNextFrame = true;
+                    break;
+            }
         }
 
         #region IHM
@@ -255,9 +324,7 @@ namespace MQTT_Video_Publisher
         private void sliProgress_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
         {
             userIsDraggingSlider = false;
-            //mePlayer.Position = TimeSpan.FromSeconds(slider_video.Value);
-            _videoCapture.Set(VideoCaptureProperties.PosFrames, slider_video.Value);
-            //            _videoCapture.PosFrames = (int)slider_video.Value;
+            nbframe = (int)slider_video.Value;
         }
 
         private void sliProgress_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -381,7 +448,8 @@ namespace MQTT_Video_Publisher
         Task MqttClient_ConnectedAsync(MQTTnet.Client.MqttClientConnectedEventArgs arg)
         {
             SetStatusConnection(Colors.Green);
-            MQTTClient_Subscribes();
+            if (topics_subscribed != null && topics_subscribed.Count > 0)
+                MQTTClient_Subscribes();
             return MQTTnet.Internal.CompletedTask.Instance;
         }
 
@@ -403,6 +471,11 @@ namespace MQTT_Video_Publisher
 
         void MQTTClient_Subscribes()
         {
+            if (mqttClient == null)
+            {
+                MessageBox.Show("You are not connected.");
+                return;
+            }
             var mqtt_Subscriber = new MQTTnet.Client.MqttClientSubscribeOptions();
             foreach (var item in topics_subscribed)
             {
@@ -461,19 +534,21 @@ namespace MQTT_Video_Publisher
 
         void Video_PlayAndPublish()
         {
-            Publish_videofile(tbx_videofile.Text);
+            Publish_videofile(videofile);
         }
 
         void SelectVideoFile()
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
-
-            System.IO.FileInfo fi = new FileInfo(tbx_videofile.Text);
-            if (fi.Exists)
-                openFileDialog.InitialDirectory = fi.DirectoryName;
+            if (videofile != "")
+            {
+                System.IO.FileInfo fi = new FileInfo(videofile);
+                if (fi.Exists)
+                    openFileDialog.InitialDirectory = fi.DirectoryName;
+            }
 
             if (openFileDialog.ShowDialog() == true)
-                tbx_videofile.Text = openFileDialog.FileName;
+                videofile = openFileDialog.FileName;
         }
 
         #region VIDEO FILE
@@ -495,6 +570,13 @@ namespace MQTT_Video_Publisher
                 cts.Cancel();
                 cts.Dispose();
                 UpdateFrames("- / -");
+
+                //is_video_pausing = true;
+                Dispatcher.BeginInvoke(() =>
+                {
+                    btn_video_play.Visibility = Visibility.Visible;
+                    slider_video.Value = slider_video.Minimum;
+                });
             }
         }
 
@@ -528,63 +610,80 @@ namespace MQTT_Video_Publisher
 
             //mesure du temps entre frame pour effectuer une lecture "temps réel" de la vidéo
             System.Diagnostics.Stopwatch watch = System.Diagnostics.Stopwatch.StartNew();
-            while (is_video_playing && !cts.IsCancellationRequested)
+            try
             {
-                while (is_video_pausing || userIsDraggingSlider)
-                    Thread.Sleep(10);
 
-                watch.Restart();
-
-                //_videoCapture.PosFrames = nbframe;
-                //if (nbframe_wanted != -1)
-                //{
-                //    nbframe = nbframe_wanted;
-                //    nbframe_wanted = -1;
-                //}
-
-                //capture de l'image
-                _videoCapture.Read(frame);
-                //nbframe++;
-
-                //fin ou erreur ?
-                if (frame.Empty())
+                while (is_video_playing && !cts.IsCancellationRequested)
                 {
-                    //if (slider_video_mouse_changing_by_code)
+                    while (is_video_pausing || userIsDraggingSlider)
+                        Thread.Sleep(10);
+
+                    watch.Restart();
+
+                    //_videoCapture.PosFrames = nbframe;
+                    //if (nbframe_wanted != -1)
+                    //{
+                    //    nbframe = nbframe_wanted;
+                    //    nbframe_wanted = -1;
+                    //}
+
+                    //capture de l'image
+                    _videoCapture.Read(frame);
+                    //nbframe++;
+
+                    //fin ou erreur ?
+                    if (frame.Empty())
                     {
-                        break;
+                        if (videofile_loop != true)
+                        {
+                            break;
+                        }
+
+                        //rembobinage & lecture
+                        nbframe = 0;
+                        _videoCapture.Read(frame);
+
+                        if (frame.Empty())
+                            break;
                     }
-                    //continue;
+
+                    //conversion en JPEG puis en byte array
+                    Cv2.ImEncode(".jpg", frame, out byte[] data);
+
+                    //DateTime t = DateTime.Now;
+                    //ajout des metadatas
+                    string metadatas = "{" +
+                        '"' + "frame" + '"' + ": " + nbframe +
+                        ", " + '"' + "time_s" + '"' + ": " + (nbframe / _videoCapture.Fps).ToString("0.000").Replace(",", ".") +
+                        "}";
+                    metadatas = nbframe.ToString();
+
+                    data = AddMetadatas(data, metadatas);
+
+                    if (sendNextFrame)
+                    {
+                        sendNextFrame = false;
+                        //publie l'image
+                        MQTT_Publish(topic_FrameSended, data);
+                    }
+
+                    //Mise à jour de l'ihm : affichage du nbr de frame
+                    UpdateFrames(nbframe + " / " + _videoCapture.FrameCount);
+
+                    //attente "temps réel"
+                    watch.Stop();
+                    double ms_to_wait = periode_entre_frame_ms - watch.ElapsedMilliseconds;
+                    if (ms_to_wait > 0)
+                        Thread.Sleep((int)ms_to_wait);
                 }
-                //Dispatcher.BeginInvoke(() =>
-                //{
-                //    slider_video_mouse_changing_by_code = true;
-                //    slider_video.Value = nbframe;
-                //    slider_video_mouse_changing_by_code = false;
-                //});
 
-                //conversion en JPEG puis en byte array
-                Cv2.ImEncode(".jpg", frame, out byte[] data);
-
-                //DateTime t = DateTime.Now;
-                //ajout des metadatas
-                string metadatas = "{" +
-                    '"' + "frame" + '"' + ": " + nbframe +
-                    ", " + '"' + "time_s" + '"' + ": " + (nbframe / _videoCapture.Fps).ToString("0.000").Replace(",", ".") +
-                    "}";
-                data = AddMetadatas(data, metadatas);
-
-                //publie l'image
-                MQTT_Publish(topic_FrameSended, data);
-
-                //Mise à jour de l'ihm : affichage du nbr de frame
-                UpdateFrames(nbframe + " / " + _videoCapture.FrameCount);
-
-                //attente "temps réel"
-                watch.Stop();
-                double ms_to_wait = periode_entre_frame_ms - watch.ElapsedMilliseconds;
-                if (ms_to_wait > 0)
-                    Thread.Sleep((int)ms_to_wait);
             }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+
             PlayingVideoStop();
         }
 
@@ -646,11 +745,16 @@ namespace MQTT_Video_Publisher
                     '"' + "frame" + '"' + ": " + nbcapturedframe +
                     ", " + '"' + "time_s" + '"' + ": " + (nbcapturedframe / _videoCapture.Fps).ToString("0.000").Replace(",", ".") +
                     "}";
+                metadatas = nbframe.ToString();
                 data = AddMetadatas(data, metadatas);
 
-                //publie l'image
-                MQTT_Publish(topic_FrameSended, data);
-                
+                if (sendNextFrame)
+                {
+                    sendNextFrame = false;
+                    //publie l'image
+                    MQTT_Publish(topic_FrameSended, data);
+                }
+
                 UpdateCapturedFrames(nbcapturedframe.ToString());
 
             }
@@ -662,7 +766,15 @@ namespace MQTT_Video_Publisher
             Dispatcher.BeginInvoke(() =>
             {
                 capture_frames.Text = message;
-            }); 
+            });
+        }
+
+        private void Btn_TopicWaitSubscribe_Click(object sender, RoutedEventArgs e)
+        {
+            topics_subscribed = new Dictionary<string, Action<byte[]?>>();
+            topics_subscribed.Add(topic_Wait, NextFrame);
+            MQTTClient_Subscribes();
+
         }
         #endregion
 

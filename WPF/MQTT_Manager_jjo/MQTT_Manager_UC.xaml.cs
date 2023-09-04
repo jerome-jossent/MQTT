@@ -193,6 +193,9 @@ namespace MQTT_Manager_jjo
             mqttClient.Dispose();
             SetStatusConnection(Colors.Red);
             disconnected?.Invoke(this, arg);
+
+            //MQTTClient_Connect();
+
             return MQTTnet.Internal.CompletedTask.Instance;
         }
 
@@ -231,6 +234,9 @@ namespace MQTT_Manager_jjo
 
         public void MQTTClient_Unubscribes(string topic)
         {
+            if (string.IsNullOrEmpty(topic))
+                return;
+
             if (topics_subscribed != null && topics_subscribed.ContainsKey(topic))
                 topics_subscribed.Remove(topic);
 

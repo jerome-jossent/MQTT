@@ -34,5 +34,53 @@ namespace MQTT_Video_Publisher.Properties {
                 this["IPs"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string videofile {
+            get {
+                return ((string)(this["videofile"]));
+            }
+            set {
+                this["videofile"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string topic_FrameSended {
+            get {
+                return ((string)(this["topic_FrameSended"]));
+            }
+            set {
+                this["topic_FrameSended"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool videofile_loop {
+            get {
+                return ((bool)(this["videofile_loop"]));
+            }
+            set {
+                this["videofile_loop"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string topic_wait {
+            get {
+                return ((string)(this["topic_wait"]));
+            }
+            set {
+                this["topic_wait"] = value;
+            }
+        }
     }
 }

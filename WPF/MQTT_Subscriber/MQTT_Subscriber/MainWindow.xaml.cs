@@ -75,12 +75,16 @@ namespace MQTT_Subscriber
 
         private void ListItemMoveUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
+            //int index = lvw_sub.SelectedIndex;
 
+            //lvw_sub.Items.
+            //lvw_sub.Items.MoveCurrentToPosition(0);
+//            lvw_sub.Items.MoveCurrentToPrevious();
         }
 
         private void ListItemMoveDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-
+            //lvw_sub.Items.MoveCurrentToNext();
         }
 
 
