@@ -68,6 +68,8 @@ namespace MQTT_Video_Publisher
             }
             set
             {
+                if (_videoCapture.IsDisposed) return;
+                if (_videoCapture.PosFrames == -1) return;
                 if (_videoCapture.PosFrames == value) return;
                 _videoCapture.PosFrames = value;
                 OnPropertyChanged();
@@ -110,6 +112,18 @@ namespace MQTT_Video_Publisher
 
         VideoCapture _videoCapture;
         CancellationTokenSource cts;
+
+        public bool? noWait
+        {
+            get => _noWait; set
+            {
+                if (_noWait == value)
+                    return;
+                _noWait = value;
+                OnPropertyChanged();
+            }
+        }
+        bool? _noWait = true;
 
         public bool? nextframeToView
         {
@@ -234,7 +248,7 @@ namespace MQTT_Video_Publisher
                 case "":
                 case "true":
                 case "1":
-                        sendNextFrame = true;
+                    sendNextFrame = true;
                     break;
             }
         }
@@ -748,7 +762,7 @@ namespace MQTT_Video_Publisher
                 metadatas = nbframe.ToString();
                 data = AddMetadatas(data, metadatas);
 
-                if (sendNextFrame)
+                if (sendNextFrame && (nextframeToSend == true || nextframeToView == true) || noWait == true)
                 {
                     sendNextFrame = false;
                     //publie l'image

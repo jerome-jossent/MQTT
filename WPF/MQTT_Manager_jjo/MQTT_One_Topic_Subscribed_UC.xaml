@@ -37,7 +37,7 @@
 
             <TextBlock Grid.Column="0" x:Name="tbk_value"/>
 
-            <Viewbox Grid.Column="1">
+            <Viewbox Grid.Column="1" MaxWidth="{Binding MaxImageWidth}">
                 <Image x:Name="img" Stretch="Uniform" StretchDirection="DownOnly" RenderOptions.BitmapScalingMode="Fant" />
             </Viewbox>
 

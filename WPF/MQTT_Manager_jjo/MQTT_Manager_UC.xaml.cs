@@ -217,20 +217,20 @@ namespace MQTT_Manager_jjo
             mqttClient.SubscribeAsync(mqtt_Subscriber, System.Threading.CancellationToken.None);
         }
 
-        public bool MQTTClient_Subscribes(string topic, Action<byte[]?> action)
-        {
-            if (topics_subscribed.ContainsKey(topic))
-                return false;
+        //public bool MQTTClient_Subscribes(string topic, Action<byte[]?> action)
+        //{
+        //    if (topics_subscribed.ContainsKey(topic))
+        //        return false;
 
-            topics_subscribed.Add(topic, action);
+        //    topics_subscribed.Add(topic, action);
 
-            var mqtt_Subscriber = new MQTTnet.Client.MqttClientSubscribeOptions();
-            var filter = new MQTTnet.Packets.MqttTopicFilter() { Topic = topic };
-            mqtt_Subscriber.TopicFilters.Add(filter);
+        //    var mqtt_Subscriber = new MQTTnet.Client.MqttClientSubscribeOptions();
+        //    var filter = new MQTTnet.Packets.MqttTopicFilter() { Topic = topic };
+        //    mqtt_Subscriber.TopicFilters.Add(filter);
 
-            mqttClient.SubscribeAsync(mqtt_Subscriber, System.Threading.CancellationToken.None);
-            return true;
-        }
+        //    mqttClient.SubscribeAsync(mqtt_Subscriber, System.Threading.CancellationToken.None);
+        //    return true;
+        //}
 
         public void MQTTClient_Unubscribes(string topic)
         {

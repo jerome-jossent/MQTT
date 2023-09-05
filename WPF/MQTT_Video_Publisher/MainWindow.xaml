@@ -86,7 +86,7 @@
                 </Grid.ColumnDefinitions>
                 <TextBlock Grid.Column="0" Text="Wait mode"/>
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
-                    <RadioButton Content="None" Margin="3" x:Name="WaitMode_None"/>
+                    <RadioButton Content="None" Margin="3" IsChecked="{Binding noWait, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
                     <RadioButton Content="next frame" Margin="3" IsChecked="{Binding nextframeToSend , UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
                     <RadioButton Content="pause beetween each frame" Margin="3" IsChecked="{Binding nextframeToView , UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
                 </StackPanel>

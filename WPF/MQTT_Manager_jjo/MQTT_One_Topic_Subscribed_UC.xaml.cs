@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
@@ -11,15 +13,31 @@ using static MQTT_Manager_jjo.MQTT_Enums;
 
 namespace MQTT_Manager_jjo
 {
-    public partial class MQTT_One_Topic_Subscribed_UC : UserControl
+    public partial class MQTT_One_Topic_Subscribed_UC : UserControl, INotifyPropertyChanged
     {
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void OnPropertyChanged([CallerMemberName] string name = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        }
+
         public MQTT_One_Topic_Subscribed _objet;
 
         public MQTT_One_Topic_Subscribed_UC()
         {
+            DataContext = this;
             InitializeComponent();
             cbx_datatype.ItemsSource = Enum.GetValues(typeof(DataType)).Cast<DataType>();
         }
+
+        public double MaxImageWidth
+        {
+            get
+            {
+                return Application.Current.MainWindow.Width * 0.9;
+            }
+        }
+
 
         public MQTT_One_Topic_Subscribed_UC _Link(MQTT_One_Topic_Subscribed objet)
         {
@@ -61,6 +79,7 @@ namespace MQTT_Manager_jjo
             Dispatcher.Invoke(() =>
             {
                 img.Source = ToImage(data);
+                OnPropertyChanged("MaxImageWidth");                
             });
         }
 
