@@ -5,115 +5,111 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MQTT_Video_Publisher"
         mc:Ignorable="d"
-        Title="Video frame to MQTT" Height="315" Width="650" Closing="Window_Closing">
+        Title="Video frame to MQTT" Closing="Window_Closing"
+        SizeToContent="WidthAndHeight"
+        >
     <Grid Margin="5">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="auto"/>
-            <RowDefinition Height="5"/>
-            <RowDefinition Height="auto"/>
-            <RowDefinition Height="auto"/>
-            <RowDefinition Height="5"/>
-            <RowDefinition Height="auto"/>
-            <RowDefinition Height="5"/>
-            <RowDefinition Height="auto"/>
-        </Grid.RowDefinitions>
 
-        <!--PARAMETRES-->
-        <Grid Grid.Row="0" Grid.Column="0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="auto"/>
-                <ColumnDefinition Width="auto"/>
-            </Grid.ColumnDefinitions>
+        <StackPanel Orientation="Vertical">
 
-            <StackPanel Grid.Column="0" >
+            <!--PARAMETRES & CONNEXION-->
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" >
+                    <Grid Margin="3">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="20"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Broker IP"/>
+                        <ComboBox Grid.Column="1" x:Name="_cbx_ips" IsEditable="True" />
+                        <Image Grid.Column="2" Height="17" RenderOptions.BitmapScalingMode="Fant" Source="/Resources/corbeille grise.png" MouseDown="SelectedIP_Delete_Click"  />
+                    </Grid>
+
+                    <Grid Margin="3">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="19*"/>
+                            <ColumnDefinition Width="183*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Broker port"/>
+                        <TextBox Grid.Column="1" x:Name="_tbx_port" Text="1883" Grid.ColumnSpan="2"/>
+                    </Grid>
+                </StackPanel>
+
+                <Image Grid.Column="1" Width="50" RenderOptions.BitmapScalingMode="Fant" Source="/Resources/device_disconnect.png" MouseDown="Connect_Click" x:Name="btn_connect" />
+                <Image Grid.Column="1" Width="50" RenderOptions.BitmapScalingMode="Fant" Source="/Resources/device_connect.png" MouseDown="Disconnect_Click" x:Name="btn_disconnect" Visibility="Hidden"/>
+
+                <Ellipse Grid.Column="2" Margin="5" Width="20" Height="20" x:Name="_ell_connection_status" />
+            </Grid>
+
+            <Separator/>
+
+            <!--TOPICS-->
+            <StackPanel>
                 <Grid Margin="3">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="150"/>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="20"/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" Text="Broker IP"/>
-                    <ComboBox Grid.Column="1" x:Name="_cbx_ips" IsEditable="True" />
-                    <Image Grid.Column="2" Height="17" RenderOptions.BitmapScalingMode="Fant" Source="/Resources/corbeille grise.png" MouseDown="SelectedIP_Delete_Click"  />
+                    <TextBlock Grid.Column="0" Text="Topic to send"/>
+                    <TextBox Grid.Column="1" Text="{Binding topic_FrameSended, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
                 </Grid>
 
                 <Grid Margin="3">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="150"/>
-                        <ColumnDefinition Width="19*"/>
-                        <ColumnDefinition Width="183*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="30"/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" Text="Broker port"/>
-                    <TextBox Grid.Column="1" x:Name="_tbx_port" Text="1883" Grid.ColumnSpan="2"/>
+                    <TextBlock Grid.Column="0" Text="Sub Topic to wait"/>
+                    <TextBox Grid.Column="1" Text="{Binding topic_Wait, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
+                    <Button Grid.Column="2" Content="Sub" Click="Btn_TopicWaitSubscribe_Click"/>
+                </Grid>
+
+                <Grid Margin="3">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="150"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Wait mode"/>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                        <RadioButton Content="None" Margin="3" IsChecked="{Binding noWait, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+                        <RadioButton Content="next frame" Margin="3" IsChecked="{Binding nextframeToSend , UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+                        <RadioButton Content="pause beetween each frame" Margin="3" IsChecked="{Binding nextframeToView , UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+                    </StackPanel>
                 </Grid>
             </StackPanel>
 
-            <Image Grid.Column="1" Width="50" RenderOptions.BitmapScalingMode="Fant" Source="/Resources/device_disconnect.png" MouseDown="Connect_Click" x:Name="btn_connect" />
-            <Image Grid.Column="1" Width="50" RenderOptions.BitmapScalingMode="Fant" Source="/Resources/device_connect.png" MouseDown="Disconnect_Click" x:Name="btn_disconnect" Visibility="Hidden"/>
+            <Separator/>
 
-            <Ellipse Grid.Column="2" Margin="5" Width="20" Height="20" x:Name="_ell_connection_status" />
-        </Grid>
-
-        <Separator Grid.Row="1"/>
-
-        <!--TOPICS-->
-        <StackPanel Grid.Row="2" >
-            <Grid Margin="3">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="150"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="Topic to send"/>
-                <TextBox Grid.Column="1" Text="{Binding topic_FrameSended, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
-            </Grid>
-
-            <Grid Margin="3">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="150"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="30"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="Sub Topic to wait"/>
-                <TextBox Grid.Column="1" Text="{Binding topic_Wait, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" />
-                <Button Grid.Column="2" Content="Sub" Click="Btn_TopicWaitSubscribe_Click"/>
-            </Grid>
-
-            <Grid Margin="3">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="150"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="Wait mode"/>
-                <StackPanel Grid.Column="1" Orientation="Horizontal">
-                    <RadioButton Content="None" Margin="3" IsChecked="{Binding noWait, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
-                    <RadioButton Content="next frame" Margin="3" IsChecked="{Binding nextframeToSend , UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
-                    <RadioButton Content="pause beetween each frame" Margin="3" IsChecked="{Binding nextframeToView , UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
-                </StackPanel>
-            </Grid>
-        </StackPanel>
-
-        <Separator Grid.Row="4"/>
-
-        <!--PUBLISH CASES-->
-        <StackPanel Grid.Row="5">
-            <!--Image-->
+            <!--Video capture-->
             <Grid Margin="3">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="150"/>
                     <ColumnDefinition Width="auto"/>
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="auto"/>
                     <ColumnDefinition Width="auto"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="Video capture"/>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="auto"/>
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Column="0" Text="Video capture" FontWeight="bold"/>
                 <ComboBox Grid.Column="2" x:Name="cbx_capture_devices" SelectionChanged="cbx_capture_devices_SelectionChanged" />
-                <ComboBox Grid.Column="3" x:Name="cbx_capture_device_resolution" SelectionChanged="cbx_capture_device_resolution_SelectionChanged" />
+                <ComboBox Grid.Column="2" Grid.Row="1" x:Name="cbx_capture_device_resolution" SelectionChanged="cbx_capture_device_resolution_SelectionChanged" />
 
-                <Image Grid.Column="4" VerticalAlignment="Center" Margin="3,0" MouseDown="btn_video_capture_pause_Click" Source="/Resources/Pause.png" RenderOptions.BitmapScalingMode="Fant" Height="20"  />
-                <Image Grid.Column="4" VerticalAlignment="Center" Margin="3,0" x:Name="btn_video_capture_play"   MouseDown="btn_video_capture_play_Click" Source="/Resources/Lecture.png" RenderOptions.BitmapScalingMode="Fant" Height="20"  />
-                <Image Grid.Column="5" VerticalAlignment="Center" Margin="3,0" MouseDown="btn_video_stop_Click" Source="/Resources/Stop.png" RenderOptions.BitmapScalingMode="Fant" Height="20"  />
+                <Image Grid.Column="3" VerticalAlignment="Center" Margin="3,0" MouseDown="btn_video_capture_pause_Click" Source="/Resources/Pause.png" RenderOptions.BitmapScalingMode="Fant" Height="20"  />
+                <Image Grid.Column="3" VerticalAlignment="Center" Margin="3,0" x:Name="btn_video_capture_play"   MouseDown="btn_video_capture_play_Click" Source="/Resources/Lecture.png" RenderOptions.BitmapScalingMode="Fant" Height="20"  />
+                <Image Grid.Column="4" VerticalAlignment="Center" Margin="3,0" MouseDown="btn_video_stop_Click" Source="/Resources/Stop.png" RenderOptions.BitmapScalingMode="Fant" Height="20"  />
 
             </Grid>
 
@@ -130,12 +126,8 @@
                 <TextBlock Grid.Column="4" Text="0/0" x:Name="capture_frames"/>
             </Grid>
 
+            <Separator/>
 
-        </StackPanel>
-
-        <Separator Grid.Row="6"/>
-
-        <StackPanel Grid.Row="7">
             <!--Video file-->
             <Grid Margin="3">
                 <Grid.ColumnDefinitions>
@@ -145,13 +137,50 @@
                     <ColumnDefinition Width="auto"/>
                     <ColumnDefinition Width="auto"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="Video file"/>
+                <TextBlock Grid.Column="0" Text="Video file" FontWeight="bold"/>
                 <Image Grid.Column="1" VerticalAlignment="Center" Margin="3,0" MouseDown="btn_pickfile" Source="/Resources/folder.png" RenderOptions.BitmapScalingMode="Fant" Height="20"  />
                 <TextBox Grid.Column="2" Text="{Binding videofile, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
 
                 <Image Grid.Column="3" VerticalAlignment="Center" Margin="3,0" MouseDown="btn_video_pause_Click" Source="/Resources/Pause.png" RenderOptions.BitmapScalingMode="Fant" Height="20"  />
                 <Image Grid.Column="3" VerticalAlignment="Center" Margin="3,0" x:Name="btn_video_play"  MouseDown="btn_video_play_Click" Source="/Resources/Lecture.png" RenderOptions.BitmapScalingMode="Fant" Height="20"  />
                 <Image Grid.Column="4" VerticalAlignment="Center" Margin="3,0" MouseDown="btn_video_stop_Click" Source="/Resources/Stop.png" RenderOptions.BitmapScalingMode="Fant" Height="20"  />
+            </Grid>
+            
+            <Grid Margin="3">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" Text="Frame :"/>
+                <TextBlock Grid.Column="1" Text="0/0" x:Name="video_frames"/>
+                <CheckBox Grid.Column="2" Content="Loop" IsChecked="{Binding videofile_loop}" />
+            </Grid>
+
+            <Grid Margin="3">
+                <Slider x:Name="slider_video" Value="{Binding nbframe, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                        Thumb.DragStarted="sliProgress_DragStarted"  Thumb.DragCompleted="sliProgress_DragCompleted" />
+            </Grid>
+
+            <Separator/>
+
+            <!--Images-->
+            <Grid Margin="3">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="Image files" FontWeight="bold" ToolTip="Fonctionne avec le subtopic wait !"/>
+                <Image Grid.Column="1" VerticalAlignment="Center" Margin="3,0" MouseDown="btn_pickfolder" Source="/Resources/folder.png" RenderOptions.BitmapScalingMode="Fant" Height="20"  />
+                <TextBox Grid.Column="2" Text="{Binding imagefiles, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
+
+                <Image Grid.Column="3" VerticalAlignment="Center" Margin="3,0" MouseDown="btn_images_pause_Click" Source="/Resources/Pause.png" RenderOptions.BitmapScalingMode="Fant" Height="20"  />
+                <Image Grid.Column="3" VerticalAlignment="Center" Margin="3,0" x:Name="btn_images_play"  MouseDown="btn_images_play_Click" Source="/Resources/Lecture.png" RenderOptions.BitmapScalingMode="Fant" Height="20"  />
+                <Image Grid.Column="4" VerticalAlignment="Center" Margin="3,0" MouseDown="btn_images_stop_Click" Source="/Resources/Stop.png" RenderOptions.BitmapScalingMode="Fant" Height="20"  />
             </Grid>
 
             <Grid Margin="3">
@@ -160,15 +189,17 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="auto"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="Frame :"/>
+                <TextBlock Grid.Column="0" Text="Index :"/>
 
-                <TextBlock Grid.Column="1" Text="0/0" x:Name="video_frames"/>
-                <CheckBox Grid.Column="2" Content="Loop" IsChecked="{Binding videofile_loop}" />
+                <TextBlock Grid.Column="1" Text="0/0" x:Name="images_nbr"/>
+                <CheckBox Grid.Column="2" Content="Loop" IsChecked="{Binding imagefiles_loop}" />
             </Grid>
 
+            <TextBlock Text="{Binding image_file, UpdateSourceTrigger=PropertyChanged}"/>
+
             <Grid Margin="3">
-                <Slider x:Name="slider_video" Value="{Binding nbframe, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-                        Thumb.DragStarted="sliProgress_DragStarted"  Thumb.DragCompleted="sliProgress_DragCompleted" ValueChanged="sliProgress_ValueChanged" />
+                <Slider x:Name="slider_images" Value="{Binding images_index, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                        Thumb.DragStarted="sli_imagesProgress_DragStarted"  Thumb.DragCompleted="sli_imagesProgress_DragCompleted"/>
             </Grid>
         </StackPanel>
 

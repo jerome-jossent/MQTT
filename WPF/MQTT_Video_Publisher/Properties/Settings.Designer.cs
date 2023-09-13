@@ -82,5 +82,29 @@ namespace MQTT_Video_Publisher.Properties {
                 this["topic_wait"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string imagefiles {
+            get {
+                return ((string)(this["imagefiles"]));
+            }
+            set {
+                this["imagefiles"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool imagefiles_loop {
+            get {
+                return ((bool)(this["imagefiles_loop"]));
+            }
+            set {
+                this["imagefiles_loop"] = value;
+            }
+        }
     }
 }

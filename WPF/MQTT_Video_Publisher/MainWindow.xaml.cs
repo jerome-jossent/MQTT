@@ -21,6 +21,9 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Threading;
 
+using System.Windows.Forms; // possible en .NET core si dans le fichier .proj on déclare dans "PropertyGroup" : < UseWindowsForms > true </ UseWindowsForms >
+
+
 namespace MQTT_Video_Publisher
 {
     public partial class MainWindow : System.Windows.Window, INotifyPropertyChanged
@@ -30,6 +33,14 @@ namespace MQTT_Video_Publisher
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
         public event PropertyChangedEventHandler PropertyChanged;
+
+        //PROPRIETES
+
+        #region mqtt
+        string _IP;
+        int _port;
+        MQTTnet.Client.IMqttClient mqttClient;
+        Dictionary<string, Action<byte[]?>> topics_subscribed;
 
         public string topic_FrameSended
         {
@@ -58,6 +69,23 @@ namespace MQTT_Video_Publisher
             }
         }
         string _topic_Wait = (string)Properties.Settings.Default["topic_wait"];
+        #endregion
+
+        #region capture video
+        Dictionary<string, FilterInfo> devices;
+        Dictionary<string, VideoCapabilities> devices_resolution;
+        Dictionary<string, int> devices_index;
+        VideoCapabilities res;
+
+        string capture_device_name;
+        int capture_device_index;
+
+        VideoCapture _videoCapture;
+        #endregion
+
+        #region video
+        bool is_video_playing;
+        bool is_video_pausing;
 
         public int nbframe
         {
@@ -68,6 +96,7 @@ namespace MQTT_Video_Publisher
             }
             set
             {
+                if (_videoCapture == null) return;
                 if (_videoCapture.IsDisposed) return;
                 if (_videoCapture.PosFrames == -1) return;
                 if (_videoCapture.PosFrames == value) return;
@@ -102,15 +131,69 @@ namespace MQTT_Video_Publisher
                 OnPropertyChanged();
             }
         }
-
-
         bool? _videofile_loop = (bool)Properties.Settings.Default["videofile_loop"];
+        #endregion
 
+        #region images
+        public int images_index
+        {
+            get
+            {
+                return _images_index;
+            }
+            set
+            {
+                _images_index = value;
+                OnPropertyChanged();
+            }
+        }
+        int _images_index;
 
-        MQTTnet.Client.IMqttClient mqttClient;
-        Dictionary<string, Action<byte[]?>> topics_subscribed;
+        public string imagefiles
+        {
+            get => _imagefiles;
+            set
+            {
+                if (_imagefiles == value) return;
+                _imagefiles = value;
+                Properties.Settings.Default["imagefiles"] = _imagefiles;
+                Properties.Settings.Default.Save();
+                OnPropertyChanged();
+            }
+        }
+        string _imagefiles = (string)Properties.Settings.Default["imagefiles"];
 
-        VideoCapture _videoCapture;
+        public string image_file
+        {
+            get => _image_file;
+            set
+            {
+                if (_image_file == value) return;
+                _image_file = value;
+                OnPropertyChanged();
+            }
+        }
+        string _image_file = "fichier en cours de lecture";
+
+        public bool? imagefiles_loop
+        {
+            get => _imagefiles_loop;
+            set
+            {
+                if (value == _imagefiles_loop) return;
+                _imagefiles_loop = value;
+                Properties.Settings.Default["imagefiles_loop"] = (bool)_imagefiles_loop;
+                Properties.Settings.Default.Save();
+                OnPropertyChanged();
+            }
+        }
+        bool? _imagefiles_loop = (bool)Properties.Settings.Default["imagefiles_loop"];
+
+        bool is_images_playing;
+        bool is_images_pausing;
+        #endregion
+
+        #region commun
         CancellationTokenSource cts;
 
         public bool? noWait
@@ -149,17 +232,18 @@ namespace MQTT_Video_Publisher
         }
         bool? _nextframeToSend = false;
 
-        bool is_video_playing;
-        bool is_video_pausing;
+
         bool userIsDraggingSlider;
         //bool slider_video_mouse_changing_by_code;
         //int nbframe_wanted = -1;
 
-        string _IP;
-        int _port;
 
         bool sendNextFrame;
 
+        #endregion
+
+
+        //CONSTRUCTEUR IHM
         public MainWindow()
         {
             InitializeComponent();
@@ -170,94 +254,13 @@ namespace MQTT_Video_Publisher
             INIT_videoplayer();
         }
 
-        Dictionary<string, FilterInfo> devices;
-        Dictionary<string, VideoCapabilities> devices_resolution;
-        Dictionary<string, int> devices_index;
-        VideoCapabilities res;
-
-        private void INIT_capturedevices()
-        {
-            cbx_capture_devices.Items.Clear();
-            devices = new Dictionary<string, FilterInfo>();
-            devices_index = new Dictionary<string, int>();
-
-            FilterInfoCollection videoDevices = new FilterInfoCollection(FilterCategory.VideoInputDevice);
-
-            // Parcourir la liste des périphériques vidéo
-            for (int i = 0; i < videoDevices.Count; i++)
-            {
-                FilterInfo device = videoDevices[i];
-                cbx_capture_devices.Items.Add(device.Name);
-                devices.Add(device.Name, device);
-                devices_index.Add(device.Name, i + 700);
-            }
-        }
-        string capture_device_name;
-        int capture_device_index;
-        private void cbx_capture_devices_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            capture_device_name = cbx_capture_devices.SelectedValue.ToString();
-            capture_device_index = devices_index[capture_device_name];
-            FilterInfo device = devices[capture_device_name];
-
-            // Créer une instance de la classe VideoCaptureDevice pour le périphérique vidéo actuel
-            VideoCaptureDevice videoSource = new VideoCaptureDevice(device.MonikerString);
-
-            // Récupérer les résolutions supportées par le périphérique
-            VideoCapabilities[] videoCapabilities = videoSource.VideoCapabilities;
-            devices_resolution = new Dictionary<string, VideoCapabilities>();
-            foreach (VideoCapabilities capability in videoCapabilities)
-            {
-                string txt = capability.FrameSize.Width + "x" + capability.FrameSize.Height + " [" + capability.MaximumFrameRate + "fps]";
-                cbx_capture_device_resolution.Items.Add(txt);
-                devices_resolution.Add(txt, capability);
-            }
-        }
-
-        private void cbx_capture_device_resolution_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            string resname = cbx_capture_device_resolution.SelectedValue as string;
-            res = devices_resolution[resname];
-        }
-
-        private void btn_video_capture_play_Click(object sender, MouseButtonEventArgs e)
-        {
-            is_video_pausing = false;
-            if (!is_video_playing)
-                CaptureVideo_PlayAndPublish();
-            btn_video_capture_play.Visibility = Visibility.Hidden;
-        }
-        private void btn_video_capture_pause_Click(object sender, MouseButtonEventArgs e)
-        {
-            is_video_pausing = true;
-            btn_video_capture_play.Visibility = Visibility.Visible;
-        }
-
-        void INIT_videoplayer()
-        {
-            DispatcherTimer timer = new DispatcherTimer();
-            timer.Interval = TimeSpan.FromSeconds(1);
-            timer.Tick += videoplayer_Tick;
-            timer.Start();
-        }
-        void NextFrame(byte[]? data)
-        {
-            string r = Encoding.UTF8.GetString(data).ToLower();
-            switch (r)
-            {
-                case "":
-                case "true":
-                case "1":
-                    sendNextFrame = true;
-                    break;
-            }
-        }
+        //METHODES
 
         #region IHM
         void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             MQTTClient_Stop();
-            PlayingVideoStop();
+            PlayVideo_Stop();
         }
 
         void Connect_Click(object sender, MouseButtonEventArgs e)
@@ -277,74 +280,6 @@ namespace MQTT_Video_Publisher
             btn_disconnect.Visibility = Visibility.Hidden;
         }
 
-        void btn_pickfile(object sender, MouseButtonEventArgs e)
-        {
-            SelectVideoFile();
-        }
-
-        void Publish_video_Click(object sender, RoutedEventArgs e)
-        {
-            Video_PlayAndPublish();
-        }
-
-        void btn_video_play_Click(object sender, MouseButtonEventArgs e)
-        {
-            is_video_pausing = false;
-            if (!is_video_playing)
-                Video_PlayAndPublish();
-            btn_video_play.Visibility = Visibility.Hidden;
-        }
-
-        void btn_video_pause_Click(object sender, MouseButtonEventArgs e)
-        {
-            is_video_pausing = true;
-            btn_video_play.Visibility = Visibility.Visible;
-        }
-
-        void btn_video_stop_Click(object sender, MouseButtonEventArgs e)
-        {
-            PlayingVideoStop();
-        }
-
-        void videoplayer_Tick(object? sender, EventArgs e)
-        {
-            if ((_videoCapture != null) && !_videoCapture.IsDisposed && (_videoCapture.FrameCount > 0) && (!userIsDraggingSlider))
-            {
-                Dispatcher.BeginInvoke(() =>
-                {
-                    //slider_video.Minimum = 0;
-                    //slider_video.Maximum = _videoCapture.FrameCount;// mePlayer.NaturalDuration.TimeSpan.TotalSeconds;
-                    slider_video.Value = _videoCapture.PosFrames;// mePlayer.Position.TotalSeconds;
-                });
-            }
-        }
-
-        //private void slider_video_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-        //{
-        //    _videoCapture.PosFrames = (int)slider_video.Value;
-        //}
-        //void slider_video_valuechanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        //{
-        //    if (slider_video_mouse_changing_by_code) return;
-        //    is_video_pausing = true;
-        //    nbframe_wanted = (int)slider_video.Value;
-        //    is_video_pausing = false;
-        //}
-        private void sliProgress_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
-        {
-            userIsDraggingSlider = true;
-        }
-
-        private void sliProgress_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
-        {
-            userIsDraggingSlider = false;
-            nbframe = (int)slider_video.Value;
-        }
-
-        private void sliProgress_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-        {
-            //lblProgressStatus.Text = TimeSpan.FromSeconds(slider_video.Value).ToString(@"hh\:mm\:ss");
-        }
         #endregion
 
         #region IP & IHM
@@ -487,7 +422,7 @@ namespace MQTT_Video_Publisher
         {
             if (mqttClient == null)
             {
-                MessageBox.Show("You are not connected.");
+                System.Windows.MessageBox.Show("You are not connected.");
                 return;
             }
             var mqtt_Subscriber = new MQTTnet.Client.MqttClientSubscribeOptions();
@@ -531,29 +466,159 @@ namespace MQTT_Video_Publisher
             System.Threading.Thread.Sleep(50);
             MQTTClient_Disconnect();
         }
-        #endregion
-        void CaptureVideo_PlayAndPublish()
+
+
+
+        void Btn_TopicWaitSubscribe_Click(object sender, RoutedEventArgs e)
         {
-            Publish_CapturedVideo();
+            topics_subscribed = new Dictionary<string, Action<byte[]?>>();
+            topics_subscribed.Add(topic_Wait, NextFrame);
+            MQTTClient_Subscribes();
+
         }
 
-        void Publish_CapturedVideo()
+        void NextFrame(byte[]? data)
+        {
+            string r = Encoding.UTF8.GetString(data).ToLower();
+            switch (r)
+            {
+                case "":
+                case "true":
+                case "1":
+                    sendNextFrame = true;
+                    break;
+            }
+        }
+
+        #endregion
+
+        #region CAPTURE VIDEO
+
+        private void INIT_capturedevices()
+        {
+            cbx_capture_devices.Items.Clear();
+            devices = new Dictionary<string, FilterInfo>();
+            devices_index = new Dictionary<string, int>();
+
+            FilterInfoCollection videoDevices = new FilterInfoCollection(FilterCategory.VideoInputDevice);
+
+            // Parcourir la liste des périphériques vidéo
+            for (int i = 0; i < videoDevices.Count; i++)
+            {
+                FilterInfo device = videoDevices[i];
+                cbx_capture_devices.Items.Add(device.Name);
+                devices.Add(device.Name, device);
+                devices_index.Add(device.Name, i + 700);
+            }
+        }
+
+        private void cbx_capture_devices_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            capture_device_name = cbx_capture_devices.SelectedValue.ToString();
+            capture_device_index = devices_index[capture_device_name];
+            FilterInfo device = devices[capture_device_name];
+
+            // Créer une instance de la classe VideoCaptureDevice pour le périphérique vidéo actuel
+            VideoCaptureDevice videoSource = new VideoCaptureDevice(device.MonikerString);
+
+            // Récupérer les résolutions supportées par le périphérique
+            VideoCapabilities[] videoCapabilities = videoSource.VideoCapabilities;
+            devices_resolution = new Dictionary<string, VideoCapabilities>();
+            foreach (VideoCapabilities capability in videoCapabilities)
+            {
+                string txt = capability.FrameSize.Width + "x" + capability.FrameSize.Height + " [" + capability.MaximumFrameRate + "fps]";
+                cbx_capture_device_resolution.Items.Add(txt);
+                devices_resolution.Add(txt, capability);
+            }
+        }
+
+        private void cbx_capture_device_resolution_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            string resname = cbx_capture_device_resolution.SelectedValue as string;
+            res = devices_resolution[resname];
+        }
+
+        private void btn_video_capture_play_Click(object sender, MouseButtonEventArgs e)
+        {
+            is_video_pausing = false;
+            if (!is_video_playing)
+                CapturedVideo_Start();
+            btn_video_capture_play.Visibility = Visibility.Hidden;
+        }
+        private void btn_video_capture_pause_Click(object sender, MouseButtonEventArgs e)
+        {
+            is_video_pausing = true;
+            btn_video_capture_play.Visibility = Visibility.Visible;
+        }
+
+
+        void CapturedVideo_Start()
         {
             cts = new CancellationTokenSource();
             Task task = new Task(() => { CaptureVideo_Thread(); }, cts.Token);
             task.Start();
         }
 
-        //-------------
-
-        void Video_PlayAndPublish()
+        void CaptureVideo_Thread()
         {
-            Publish_videofile(videofile);
-        }
+            is_video_playing = true;
 
+            //webcam
+            _videoCapture = new VideoCapture(capture_device_index);
+            _videoCapture.FrameWidth = res.FrameSize.Width;
+            _videoCapture.FrameHeight = res.FrameSize.Height;
+            _videoCapture.Fps = res.FrameRate;
+
+            Mat frame = new Mat();
+
+            //for (int i = 0; i < res.FrameRate; i++)
+            //    _videoCapture.Read(frame);
+
+            DateTime t0 = DateTime.Now;
+            int nbcapturedframe = 0;
+
+            //mesure du temps entre frame pour effectuer une lecture "temps réel" de la vidéo
+            System.Diagnostics.Stopwatch watch = System.Diagnostics.Stopwatch.StartNew();
+            while (is_video_playing && !cts.IsCancellationRequested)
+            {
+                //capture de l'image
+                _videoCapture.Read(frame);
+                nbcapturedframe++;
+
+                //fin ou erreur ?
+                if (frame.Empty())
+                    continue;
+
+                //conversion en JPEG puis en byte array
+                Cv2.ImEncode(".jpg", frame, out byte[] data);
+
+                //ajout des metadatas
+                string metadatas = "{" +
+                    '"' + "frame" + '"' + ": " + nbcapturedframe +
+                    ", " + '"' + "time_s" + '"' + ": " + (nbcapturedframe / _videoCapture.Fps).ToString("0.000").Replace(",", ".") +
+                    "}";
+                metadatas = nbframe.ToString();
+                data = AddMetadatas(data, metadatas);
+
+                if (sendNextFrame && (nextframeToSend == true || nextframeToView == true) || noWait == true)
+                {
+                    sendNextFrame = false;
+                    //publie l'image
+                    MQTT_Publish(topic_FrameSended, data);
+                }
+
+                UpdateCapturedFrames(nbcapturedframe.ToString());
+
+            }
+            _videoCapture.Dispose();
+            PlayVideo_Stop();
+        }
+        #endregion
+
+        #region VIDEO FILE
         void SelectVideoFile()
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
+            Microsoft.Win32.OpenFileDialog openFileDialog = new Microsoft.Win32.OpenFileDialog();
             if (videofile != "")
             {
                 System.IO.FileInfo fi = new FileInfo(videofile);
@@ -565,16 +630,19 @@ namespace MQTT_Video_Publisher
                 videofile = openFileDialog.FileName;
         }
 
-        #region VIDEO FILE
-
-        void Publish_videofile(string file)
+        void PlayVideo_Start()
         {
-            cts = new CancellationTokenSource();
-            Task task = new Task(() => { PlayVideo_Thread(file); }, cts.Token);
-            task.Start();
+            is_video_pausing = false;
+            btn_video_play.Visibility = Visibility.Hidden;
+            if (!is_video_playing)
+            {
+                cts = new CancellationTokenSource();
+                Task task = new Task(() => { PlayVideo_Thread(videofile); }, cts.Token);
+                task.Start();
+            }
         }
 
-        void PlayingVideoStop()
+        void PlayVideo_Stop()
         {
             if (cts != null && !cts.IsCancellationRequested)
             {
@@ -590,6 +658,24 @@ namespace MQTT_Video_Publisher
                 {
                     btn_video_play.Visibility = Visibility.Visible;
                     slider_video.Value = slider_video.Minimum;
+                });
+            }
+        }
+
+        void INIT_videoplayer()
+        {
+            DispatcherTimer timer = new DispatcherTimer();
+            timer.Interval = TimeSpan.FromSeconds(1);
+            timer.Tick += videoplayer_Tick;
+            timer.Start();
+        }
+        void videoplayer_Tick(object? sender, EventArgs e)
+        {
+            if ((_videoCapture != null) && !_videoCapture.IsDisposed && (_videoCapture.FrameCount > 0) && (!userIsDraggingSlider))
+            {
+                Dispatcher.BeginInvoke(() =>
+                {
+                    slider_video.Value = _videoCapture.PosFrames;
                 });
             }
         }
@@ -698,7 +784,7 @@ namespace MQTT_Video_Publisher
                 throw;
             }
 
-            PlayingVideoStop();
+            PlayVideo_Stop();
         }
 
         void UpdateFrames(string message)
@@ -721,60 +807,6 @@ namespace MQTT_Video_Publisher
             return newImageStream.ToArray();
         }
 
-        void CaptureVideo_Thread()
-        {
-            is_video_playing = true;
-
-            //webcam
-            _videoCapture = new VideoCapture(capture_device_index);
-            _videoCapture.FrameWidth = res.FrameSize.Width;
-            _videoCapture.FrameHeight = res.FrameSize.Height;
-            _videoCapture.Fps = res.FrameRate;
-
-            Mat frame = new Mat();
-
-            //for (int i = 0; i < res.FrameRate; i++)
-            //    _videoCapture.Read(frame);
-
-            DateTime t0 = DateTime.Now;
-            int nbcapturedframe = 0;
-
-            //mesure du temps entre frame pour effectuer une lecture "temps réel" de la vidéo
-            System.Diagnostics.Stopwatch watch = System.Diagnostics.Stopwatch.StartNew();
-            while (is_video_playing && !cts.IsCancellationRequested)
-            {
-                //capture de l'image
-                _videoCapture.Read(frame);
-                nbcapturedframe++;
-
-                //fin ou erreur ?
-                if (frame.Empty())
-                    continue;
-
-                //conversion en JPEG puis en byte array
-                Cv2.ImEncode(".jpg", frame, out byte[] data);
-
-                //ajout des metadatas
-                string metadatas = "{" +
-                    '"' + "frame" + '"' + ": " + nbcapturedframe +
-                    ", " + '"' + "time_s" + '"' + ": " + (nbcapturedframe / _videoCapture.Fps).ToString("0.000").Replace(",", ".") +
-                    "}";
-                metadatas = nbframe.ToString();
-                data = AddMetadatas(data, metadatas);
-
-                if (sendNextFrame && (nextframeToSend == true || nextframeToView == true) || noWait == true)
-                {
-                    sendNextFrame = false;
-                    //publie l'image
-                    MQTT_Publish(topic_FrameSended, data);
-                }
-
-                UpdateCapturedFrames(nbcapturedframe.ToString());
-
-            }
-            _videoCapture.Dispose();
-            PlayingVideoStop();
-        }
         void UpdateCapturedFrames(string message)
         {
             Dispatcher.BeginInvoke(() =>
@@ -783,14 +815,198 @@ namespace MQTT_Video_Publisher
             });
         }
 
-        private void Btn_TopicWaitSubscribe_Click(object sender, RoutedEventArgs e)
+        void btn_pickfile(object sender, MouseButtonEventArgs e)
         {
-            topics_subscribed = new Dictionary<string, Action<byte[]?>>();
-            topics_subscribed.Add(topic_Wait, NextFrame);
-            MQTTClient_Subscribes();
+            SelectVideoFile();
+        }
+
+        void btn_video_play_Click(object sender, MouseButtonEventArgs e)
+        {
+            PlayVideo_Start();
+        }
+
+        void btn_video_pause_Click(object sender, MouseButtonEventArgs e)
+        {
+            is_video_pausing = true;
+            btn_video_play.Visibility = Visibility.Visible;
+        }
+
+        void btn_video_stop_Click(object sender, MouseButtonEventArgs e)
+        {
+            PlayVideo_Stop();
+        }
+
+
+        private void sliProgress_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
+        {
+            userIsDraggingSlider = true;
+        }
+
+        private void sliProgress_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
+        {
+            userIsDraggingSlider = false;
+            nbframe = (int)slider_video.Value;
+        }
+
+
+        #endregion
+
+        #region IMAGE FILES
+        private void btn_pickfolder(object sender, MouseButtonEventArgs e)
+        {
+            SelectImageFiles();
+        }
+
+        void SelectImageFiles()
+        {
+            using var dialog = new FolderBrowserDialog
+            {
+                Description = "Dossier images",
+                UseDescriptionForTitle = true,
+                SelectedPath = (imagefiles != string.Empty) ? imagefiles :
+                Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory) + Path.DirectorySeparatorChar,
+                ShowNewFolderButton = true
+            };
+
+            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                imagefiles = dialog.SelectedPath;
+
+            }
 
         }
+
+        private void btn_images_play_Click(object sender, MouseButtonEventArgs e) { Images_Start(); }
+        private void btn_images_stop_Click(object sender, MouseButtonEventArgs e) { Images_Stop(); }
+        private void btn_images_pause_Click(object sender, MouseButtonEventArgs e) { Images_Pause(); }
+
+        private void sli_imagesProgress_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
+        {
+            userIsDraggingSlider = false;
+            images_index = (int)slider_images.Value;
+        }
+
+        private void sli_imagesProgress_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
+        {
+            userIsDraggingSlider = true;
+        }
+
+        void Images_Start()
+        {
+            is_images_pausing = false;
+            btn_images_play.Visibility = Visibility.Hidden;
+            if (!is_images_playing)
+            {
+                //lister nombre de fichiers
+                System.IO.DirectoryInfo images_directory = new System.IO.DirectoryInfo(imagefiles);
+                System.IO.FileInfo[] files = images_directory.GetFiles("*.*", SearchOption.AllDirectories);
+
+                //démarrer thread
+                cts = new CancellationTokenSource();
+                Task task = new Task(() => { Images_Thread(files); }, cts.Token);
+                task.Start();
+            }
+        }
+
+        void Images_Stop()
+        {
+            if (cts != null && !cts.IsCancellationRequested)
+            {
+                if (is_images_pausing)
+                    is_images_pausing = false;
+                is_images_playing = false;
+                cts.Cancel();
+                cts.Dispose();
+                UpdateImageNumber("- / -");
+
+                //is_video_pausing = true;
+                Dispatcher.BeginInvoke(() =>
+                {
+                    btn_images_play.Visibility = Visibility.Visible;
+                    slider_images.Value = slider_images.Minimum;
+                });
+            }
+        }
+
+        void Images_Pause()
+        {
+            is_images_pausing = true;
+            btn_images_play.Visibility = Visibility.Visible;
+        }
+
+        void Images_Thread(System.IO.FileInfo[] imageFiles)
+        {
+            is_images_playing = true;
+
+            Mat frame = new Mat();
+
+            DateTime t0 = DateTime.Now;
+            images_index = 0;
+            Dispatcher.BeginInvoke(() =>
+            {
+                slider_images.Minimum = 0;
+                slider_images.Maximum = imageFiles.Length;
+            });
+
+            sendNextFrame = true;
+
+            try
+            {
+                while (is_images_playing && !cts.IsCancellationRequested)
+                {
+                    //Mise à jour de l'ihm : affichage du nbr de frame
+                    UpdateImageNumber(images_index + " / " + imageFiles.Length);
+
+                    //lecture de l'image
+                    image_file = imageFiles[images_index].FullName;
+                    frame = new Mat(image_file);
+
+
+                    //conversion en JPEG puis en byte array
+                    Cv2.ImEncode(".jpg", frame, out byte[] data);
+
+                    //ajout des metadatas
+                    string metadatas = imageFiles[images_index].FullName;
+                    //metadatas = images_index.ToString();
+
+                    data = AddMetadatas(data, metadatas);
+
+                    while (is_images_pausing || userIsDraggingSlider || !sendNextFrame)
+                        Thread.Sleep(10);
+                    sendNextFrame = false;
+
+                    //publie l'image
+                    MQTT_Publish(topic_FrameSended, data);
+
+                    images_index++;
+                    if (images_index > imageFiles.Length - 1)
+                    {
+                        if (imagefiles_loop != true)
+                            break;
+                        images_index = 0;
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+
+            Images_Stop();
+        }
+
+        void UpdateImageNumber(string message)
+        {
+            Dispatcher.BeginInvoke(() =>
+            {
+                images_nbr.Text = message;
+            });
+        }
         #endregion
+
+
 
         //#region métadata image JPG
         //void PrintIfdData(StringBuilder sb, ExifIfd Ifd, ExifData d)
@@ -947,6 +1163,5 @@ namespace MQTT_Video_Publisher
         //    }
         //}
         //#endregion
-
     }
 }
