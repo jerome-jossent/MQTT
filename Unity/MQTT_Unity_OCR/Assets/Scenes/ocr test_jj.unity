@@ -535,7 +535,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mqtt: {fileID: 1270471813}
-  topic: cropped
+  topic: veolia/itv/advise/image_with_meta
   dataType: 0
   onNewByteArray:
     m_PersistentCalls:

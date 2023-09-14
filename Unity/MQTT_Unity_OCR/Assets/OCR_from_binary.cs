@@ -121,6 +121,7 @@ namespace OpenCVForUnityExample
 
         public bool display_image;
 
+        public string[] results_string;
 
         void Start()
         {
@@ -327,7 +328,13 @@ namespace OpenCVForUnityExample
                 results.Add(result);
             }
 
-            Debug.Log("Inference time, ms: " + tickMeter.getTimeMilli());
+            List<string> list_res = new List<string>();
+            foreach (OCR_result res in results)
+                list_res.Add(res.text);
+
+            results_string = list_res.ToArray();
+            Debug.Log("Inference time, ms: " + tickMeter.getTimeMilli() + "\n\"" +
+               string.Join("\" , \"", results_string) + "\"");
             tickMeter = null;
         }
 
