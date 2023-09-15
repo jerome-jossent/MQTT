@@ -479,15 +479,7 @@ namespace MQTT_Video_Publisher
 
         void NextFrame(byte[]? data)
         {
-            string r = Encoding.UTF8.GetString(data).ToLower();
-            switch (r)
-            {
-                case "":
-                case "true":
-                case "1":
-                    sendNextFrame = true;
-                    break;
-            }
+            sendNextFrame = true;
         }
 
         #endregion
@@ -880,6 +872,13 @@ namespace MQTT_Video_Publisher
         private void btn_images_stop_Click(object sender, MouseButtonEventArgs e) { Images_Stop(); }
         private void btn_images_pause_Click(object sender, MouseButtonEventArgs e) { Images_Pause(); }
 
+
+        private void btn_image_Click(object sender, MouseButtonEventArgs e)
+        {
+            //if not init INIT
+            //photo
+        }
+
         private void sli_imagesProgress_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
         {
             userIsDraggingSlider = false;
@@ -941,33 +940,37 @@ namespace MQTT_Video_Publisher
             Mat frame = new Mat();
 
             DateTime t0 = DateTime.Now;
-            images_index = 0;
             Dispatcher.BeginInvoke(() =>
             {
                 slider_images.Minimum = 0;
-                slider_images.Maximum = imageFiles.Length;
+                slider_images.Maximum = imageFiles.Length - 1;
+                images_index = 0;
             });
 
-            sendNextFrame = true;
+            sendNextFrame = false;
 
             try
             {
                 while (is_images_playing && !cts.IsCancellationRequested)
                 {
-                    //Mise à jour de l'ihm : affichage du nbr de frame
-                    UpdateImageNumber(images_index + " / " + imageFiles.Length);
+                    //Mise à jour de l'ihm : affichage du numéro de l'image
+                    UpdateImageNumber((images_index + 1) + " / " + imageFiles.Length);
 
                     //lecture de l'image
+                    if (images_index > imageFiles.Length-1)
+                    {
+                        //mais je vois pas comment c'est possible !?
+                        images_index = 0;
+                    }
+
                     image_file = imageFiles[images_index].FullName;
                     frame = new Mat(image_file);
-
 
                     //conversion en JPEG puis en byte array
                     Cv2.ImEncode(".jpg", frame, out byte[] data);
 
                     //ajout des metadatas
                     string metadatas = imageFiles[images_index].FullName;
-                    //metadatas = images_index.ToString();
 
                     data = AddMetadatas(data, metadatas);
 

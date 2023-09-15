@@ -6,6 +6,6 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/ocr test_jj.unity
+    path: Assets/Scenes/ocr test_jj.unity
     guid: 4dbb6a0b28b08c743b2840ba6a723b44
   m_configObjects: {}

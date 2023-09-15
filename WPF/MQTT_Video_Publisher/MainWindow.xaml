@@ -95,8 +95,6 @@
                     <ColumnDefinition Width="150"/>
                     <ColumnDefinition Width="auto"/>
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="auto"/>
-                    <ColumnDefinition Width="auto"/>
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="auto"/>
@@ -104,26 +102,22 @@
                 </Grid.RowDefinitions>
 
                 <TextBlock Grid.Column="0" Text="Video capture" FontWeight="bold"/>
-                <ComboBox Grid.Column="2" x:Name="cbx_capture_devices" SelectionChanged="cbx_capture_devices_SelectionChanged" />
-                <ComboBox Grid.Column="2" Grid.Row="1" x:Name="cbx_capture_device_resolution" SelectionChanged="cbx_capture_device_resolution_SelectionChanged" />
-
-                <Image Grid.Column="3" VerticalAlignment="Center" Margin="3,0" MouseDown="btn_video_capture_pause_Click" Source="/Resources/Pause.png" RenderOptions.BitmapScalingMode="Fant" Height="20"  />
-                <Image Grid.Column="3" VerticalAlignment="Center" Margin="3,0" x:Name="btn_video_capture_play"   MouseDown="btn_video_capture_play_Click" Source="/Resources/Lecture.png" RenderOptions.BitmapScalingMode="Fant" Height="20"  />
-                <Image Grid.Column="4" VerticalAlignment="Center" Margin="3,0" MouseDown="btn_video_stop_Click" Source="/Resources/Stop.png" RenderOptions.BitmapScalingMode="Fant" Height="20"  />
-
+                <ComboBox Grid.Column="2" x:Name="cbx_capture_devices" SelectionChanged="cbx_capture_devices_SelectionChanged" Margin="2"/>
+                <ComboBox Grid.Column="2" Grid.Row="1" x:Name="cbx_capture_device_resolution" SelectionChanged="cbx_capture_device_resolution_SelectionChanged" Margin="2"/>
             </Grid>
 
             <Grid Margin="3">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="150"/>
-                    <ColumnDefinition Width="auto"/>
-                    <ColumnDefinition Width="auto"/>
-                    <ColumnDefinition Width="auto"/>
                     <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
                 </Grid.ColumnDefinitions>
                 <TextBlock Grid.Column="0" Text="Frame :"/>
 
-                <TextBlock Grid.Column="4" Text="0/0" x:Name="capture_frames"/>
+                <TextBlock Grid.Column="1" Text="0/0" x:Name="capture_frames"/> <Image Grid.Column="3" VerticalAlignment="Center" Margin="3,0" MouseDown="btn_video_capture_pause_Click" Source="/Resources/Pause.png" RenderOptions.BitmapScalingMode="Fant" Height="20"  />
+                <Image Grid.Column="2" VerticalAlignment="Center" Margin="3,0" x:Name="btn_video_capture_play"   MouseDown="btn_video_capture_play_Click" Source="/Resources/Lecture.png" RenderOptions.BitmapScalingMode="Fant" Height="20"  />
+                <Image Grid.Column="3" VerticalAlignment="Center" Margin="3,0" MouseDown="btn_video_stop_Click" Source="/Resources/Stop.png" RenderOptions.BitmapScalingMode="Fant" Height="20"  />
             </Grid>
 
             <Separator/>
@@ -134,16 +128,11 @@
                     <ColumnDefinition Width="150"/>
                     <ColumnDefinition Width="auto"/>
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="auto"/>
-                    <ColumnDefinition Width="auto"/>
                 </Grid.ColumnDefinitions>
+                
                 <TextBlock Grid.Column="0" Text="Video file" FontWeight="bold"/>
                 <Image Grid.Column="1" VerticalAlignment="Center" Margin="3,0" MouseDown="btn_pickfile" Source="/Resources/folder.png" RenderOptions.BitmapScalingMode="Fant" Height="20"  />
                 <TextBox Grid.Column="2" Text="{Binding videofile, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
-
-                <Image Grid.Column="3" VerticalAlignment="Center" Margin="3,0" MouseDown="btn_video_pause_Click" Source="/Resources/Pause.png" RenderOptions.BitmapScalingMode="Fant" Height="20"  />
-                <Image Grid.Column="3" VerticalAlignment="Center" Margin="3,0" x:Name="btn_video_play"  MouseDown="btn_video_play_Click" Source="/Resources/Lecture.png" RenderOptions.BitmapScalingMode="Fant" Height="20"  />
-                <Image Grid.Column="4" VerticalAlignment="Center" Margin="3,0" MouseDown="btn_video_stop_Click" Source="/Resources/Stop.png" RenderOptions.BitmapScalingMode="Fant" Height="20"  />
             </Grid>
             
             <Grid Margin="3">
@@ -151,11 +140,15 @@
                     <ColumnDefinition Width="150"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
                 </Grid.ColumnDefinitions>
                 
                 <TextBlock Grid.Column="0" Text="Frame :"/>
                 <TextBlock Grid.Column="1" Text="0/0" x:Name="video_frames"/>
-                <CheckBox Grid.Column="2" Content="Loop" IsChecked="{Binding videofile_loop}" />
+                <CheckBox Grid.Column="2" Content="Loop" IsChecked="{Binding videofile_loop}" /><Image Grid.Column="3" VerticalAlignment="Center" Margin="3,0" MouseDown="btn_video_pause_Click" Source="/Resources/Pause.png" RenderOptions.BitmapScalingMode="Fant" Height="20"  />
+                <Image Grid.Column="3" VerticalAlignment="Center" Margin="3,0" x:Name="btn_video_play"  MouseDown="btn_video_play_Click" Source="/Resources/Lecture.png" RenderOptions.BitmapScalingMode="Fant" Height="20"  />
+                <Image Grid.Column="4" VerticalAlignment="Center" Margin="3,0" MouseDown="btn_video_stop_Click" Source="/Resources/Stop.png" RenderOptions.BitmapScalingMode="Fant" Height="20"  />
             </Grid>
 
             <Grid Margin="3">
@@ -172,15 +165,11 @@
                     <ColumnDefinition Width="auto"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="auto"/>
-                    <ColumnDefinition Width="auto"/>
                 </Grid.ColumnDefinitions>
                 <TextBlock Grid.Column="0" Text="Image files" FontWeight="bold" ToolTip="Fonctionne avec le subtopic wait !"/>
                 <Image Grid.Column="1" VerticalAlignment="Center" Margin="3,0" MouseDown="btn_pickfolder" Source="/Resources/folder.png" RenderOptions.BitmapScalingMode="Fant" Height="20"  />
                 <TextBox Grid.Column="2" Text="{Binding imagefiles, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}"/>
-
-                <Image Grid.Column="3" VerticalAlignment="Center" Margin="3,0" MouseDown="btn_images_pause_Click" Source="/Resources/Pause.png" RenderOptions.BitmapScalingMode="Fant" Height="20"  />
-                <Image Grid.Column="3" VerticalAlignment="Center" Margin="3,0" x:Name="btn_images_play"  MouseDown="btn_images_play_Click" Source="/Resources/Lecture.png" RenderOptions.BitmapScalingMode="Fant" Height="20"  />
-                <Image Grid.Column="4" VerticalAlignment="Center" Margin="3,0" MouseDown="btn_images_stop_Click" Source="/Resources/Stop.png" RenderOptions.BitmapScalingMode="Fant" Height="20"  />
+                <Image Grid.Column="3" VerticalAlignment="Center" Margin="3,0" MouseDown="btn_image_Click" Source="/Resources/Lecture.png" RenderOptions.BitmapScalingMode="Fant" Height="20"  />
             </Grid>
 
             <Grid Margin="3">
@@ -188,11 +177,17 @@
                     <ColumnDefinition Width="150"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
                 </Grid.ColumnDefinitions>
                 <TextBlock Grid.Column="0" Text="Index :"/>
 
                 <TextBlock Grid.Column="1" Text="0/0" x:Name="images_nbr"/>
                 <CheckBox Grid.Column="2" Content="Loop" IsChecked="{Binding imagefiles_loop}" />
+                <Image Grid.Column="3" VerticalAlignment="Center" Margin="3,0" MouseDown="btn_images_pause_Click" Source="/Resources/Pause.png" RenderOptions.BitmapScalingMode="Fant" Height="20"  />
+                <Image Grid.Column="3" VerticalAlignment="Center" Margin="3,0" x:Name="btn_images_play"  MouseDown="btn_images_play_Click" Source="/Resources/Lecture.png" RenderOptions.BitmapScalingMode="Fant" Height="20"  />
+                <Image Grid.Column="4" VerticalAlignment="Center" Margin="3,0" MouseDown="btn_images_stop_Click" Source="/Resources/Stop.png" RenderOptions.BitmapScalingMode="Fant" Height="20"  />
+
             </Grid>
 
             <TextBlock Text="{Binding image_file, UpdateSourceTrigger=PropertyChanged}"/>
