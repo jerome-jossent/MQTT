@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net7.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Logo Arduino.png" />
+    <None Remove="MQTT.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\1-Visual Studio\Communication_Serie_.NET7\Communication_Serie_.NET7.csproj" />
+    <ProjectReference Include="..\MQTT_Manager_jjo\MQTT_Manager_jjo.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Logo Arduino.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="MQTT.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+  </ItemGroup>
+
+</Project>
