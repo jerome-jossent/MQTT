@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MQTT_Serial_to_MQTT", "MQTT
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MQTT_Manager_jjo", "..\MQTT_Manager_jjo\MQTT_Manager_jjo.csproj", "{9DFE4F34-3739-4479-94D1-86364E3EAEF4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Communication_Serie_.NET7", "..\..\..\..\1-Visual Studio\Communication_Serie_.NET7\Communication_Serie_.NET7.csproj", "{8B855E8E-8483-47DE-A478-565D73A4E535}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Communication_Serie_.NET7", "..\Communication_Serie_.NET7\Communication_Serie_.NET7.csproj", "{8B855E8E-8483-47DE-A478-565D73A4E535}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
