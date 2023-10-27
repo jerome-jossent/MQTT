@@ -1,0 +1,86 @@
+﻿<Window
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MQTT_Serial_to_MQTT"
+        xmlns:MQTT_Manager_jjo="clr-namespace:MQTT_Manager_jjo;assembly=MQTT_Manager_jjo"
+        xmlns:Communication_Serie_NET7="clr-namespace:Communication_Serie_.NET7;assembly=Communication_Serie_.NET7"
+        x:Class="MQTT_Serial_to_MQTT.MainWindow"
+        mc:Ignorable="d"
+        Loaded="Window_Loaded" Closing="Window_Closing"
+        Title="SERIAL 2 MQTT" Height="350" Width="750">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0" >
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Communication_Serie_NET7:UI_COM x:Name="serial" Grid.Column="0" Margin="10"/>
+            <MQTT_Manager_jjo:MQTT_Manager_UC x:Name="mqtt_client" Grid.Column="1" Margin="10"/>
+
+        </Grid>
+
+        <TabControl Grid.Row="1">
+            <TabItem Header="Serial -> MQTT">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <!--Serial Income-->
+                    <Grid Grid.Column="0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="auto"/>
+                        </Grid.RowDefinitions>
+                        <Communication_Serie_NET7:UI_TextBox Grid.Row="0" x:Name="tbx_serial_in" />
+                        <Grid Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Label Content="data separator" VerticalContentAlignment="Center"/>
+                            <TextBox Grid.Column="1" Margin="5,5,0,5" Height="25" Text="{Binding data_separator, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center"/>
+                        </Grid>
+                    </Grid>
+                    <!--MQTT Topic-->
+                    <Grid Grid.Column="1">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="auto"/>
+                            <RowDefinition Height="auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <Grid Grid.Row="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="150"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Label Content="data key value separator" VerticalContentAlignment="Center"/>
+                            <TextBox Grid.Column="1" Margin="5,5,0,5" Height="25" Text="{Binding dataKeyValue_separator, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center"/>
+                        </Grid>
+                        <Grid Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="150"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Label Content="topic prefix" VerticalContentAlignment="Center"/>
+                            <TextBox Grid.Column="1" Margin="5,5,0,5" Height="25" Text="{Binding topicPrefix, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" VerticalContentAlignment="Center"/>
+                        </Grid>
+                        <ListBox Grid.Row="2" x:Name="lbx_sended_to_broker" />
+                    </Grid>
+
+                </Grid>
+            </TabItem>
+            <TabItem Header="MQTT -> Serial" IsEnabled="False">
+
+            </TabItem>
+        </TabControl>
+
+    </Grid>
+</Window>
