@@ -752,7 +752,7 @@ namespace MQTT_Video_Publisher
 
                     data = AddMetadatas(data, metadatas);
 
-                    if (sendNextFrame)
+                    if (noWait.Value == true || sendNextFrame)
                     {
                         sendNextFrame = false;
                         //publie l'image
