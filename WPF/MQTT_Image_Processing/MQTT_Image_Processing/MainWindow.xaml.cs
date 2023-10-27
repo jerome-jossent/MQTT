@@ -30,13 +30,11 @@ namespace MQTT_Image_Processing
             mqtt_crop = new MQTT_One_Topic_Subscribed(mqtt_uc);
             mqtt_image = new MQTT_One_Topic_Subscribed(mqtt_uc);
 
-            mqtt_crop_uc._Link(mqtt_crop);
+            //mqtt_crop_uc._Link(mqtt_crop);
             mqtt_image_uc._Link(mqtt_image);
 
             mqtt_image.newData += Mqtt_image_crop_newData;
             mqtt_crop.newData += Mqtt_image_crop_newData;
-
-            //mqtt_crop_uc.tbx_topic
         }
 
         void Mqtt_image_crop_newData(object? sender, EventArgs e)

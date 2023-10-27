@@ -4,25 +4,67 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MQTT_Image_Processing"
-        xmlns:MQTT_Manager_jjo="clr-namespace:MQTT_Manager_jjo;assembly=MQTT_Manager_jjo" x:Class="MQTT_Image_Processing.MainWindow"
+        xmlns:MQTT_Manager_jjo="clr-namespace:MQTT_Manager_jjo;assembly=MQTT_Manager_jjo" 
+        x:Class="MQTT_Image_Processing.MainWindow"
         mc:Ignorable="d"
+    SizeToContent="WidthAndHeight"
         Title="Image Processing" Height="450" Width="800">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="auto"/>
             <RowDefinition Height="5"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
-            <MQTT_Manager_jjo:MQTT_Manager_UC Grid.Row="0" x:Name="mqtt_uc" Margin="10,10,10,0" VerticalAlignment="Top"/>
+        
+        <MQTT_Manager_jjo:MQTT_Manager_UC Grid.Row="0" x:Name="mqtt_uc" Margin="10,10,10,0" VerticalAlignment="Top"/>
 
-            <Separator Grid.Row="1" Margin="10, 10, 10, 0"/>
-        <ListBox Grid.Row="2">
+        <StackPanel Grid.Row="2">
+            <GroupBox>
+                <GroupBox.Header>
+                    <TextBlock Text="IMAGE IN" FontWeight="Bold" Foreground="red"/>
+                </GroupBox.Header>
+                <MQTT_Manager_jjo:MQTT_One_Topic_Subscribed_UC x:Name="mqtt_image_uc"/>
+            </GroupBox>
 
+            <GroupBox>
+                <GroupBox.Header>
+                    <TextBlock Text="CROP / ROI" FontWeight="Bold" Foreground="red"/>
+                </GroupBox.Header>
+                
+            </GroupBox>
+
+            <GroupBox>
+                <GroupBox.Header>
+                    <TextBlock Text="RESIZE" FontWeight="Bold" Foreground="red"/>
+                </GroupBox.Header>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="150"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="150"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0"/>
+                    <Slider Grid.Column="1"/>
+                    <TextBlock Grid.Column="2"/>
+                </Grid>
+            </GroupBox>
+
+            <GroupBox>
+                <GroupBox.Header>
+                    <TextBlock Text="IMAGE OUT" FontWeight="Bold" Foreground="red"/>
+                </GroupBox.Header>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="150"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="150"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0"/>
+
+                    <TextBlock Grid.Column="2"/>
+                </Grid>
+            </GroupBox>
             
-            <MQTT_Manager_jjo:MQTT_One_Topic_Subscribed_UC x:Name="mqtt_crop_uc"  />
-            <MQTT_Manager_jjo:MQTT_One_Topic_Subscribed_UC x:Name="mqtt_image_uc"  />
-            
-            
-        </ListBox>
+        </StackPanel>
     </Grid>
 </Window>
