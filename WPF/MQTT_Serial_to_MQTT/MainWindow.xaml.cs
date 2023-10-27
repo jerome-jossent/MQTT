@@ -38,7 +38,7 @@ namespace MQTT_Serial_to_MQTT
                 OnPropertyChanged();
             }
         }
-        string _data_separator = ", ";
+        string _data_separator = ",";
 
         public string dataKeyValue_separator
         {
