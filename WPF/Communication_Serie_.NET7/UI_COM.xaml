@@ -1,0 +1,17 @@
+﻿<UserControl x:Class="Communication_Serie_.NET7.UI_COM"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Communication_Serie_.NET7"
+             mc:Ignorable="d" 
+              d:DesignHeight="23" d:DesignWidth="310">
+    <StackPanel Orientation="Horizontal" Height="23">
+        <Label Content="Port"/>
+        <ComboBox x:Name="cbx_port" Width="70"/>
+        <Image Source="refresh.png" MouseDown="_PortRefresh" RenderOptions.BitmapScalingMode="Fant" />
+        <Label Content="Débit"/>
+        <ComboBox x:Name="cbx_bauds" Width="70"/>
+        <Button x:Name="btn_connection_deconnection" Content="Connexion" Width="75" Click="btn_connection_deconnection_Click"/>
+    </StackPanel>
+</UserControl>
