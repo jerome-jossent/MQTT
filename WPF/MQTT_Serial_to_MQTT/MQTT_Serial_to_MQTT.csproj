@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\1-Visual Studio\Communication_Serie_.NET7\Communication_Serie_.NET7.csproj" />
+    <ProjectReference Include="..\Communication_Serie_.NET7\Communication_Serie_.NET7.csproj" />
     <ProjectReference Include="..\MQTT_Manager_jjo\MQTT_Manager_jjo.csproj" />
   </ItemGroup>
 
