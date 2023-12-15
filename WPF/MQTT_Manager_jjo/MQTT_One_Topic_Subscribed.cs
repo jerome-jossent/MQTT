@@ -13,6 +13,7 @@ namespace MQTT_Manager_jjo
 
         MQTT_One_Topic_Subscribed_UC _uc;
         public MQTT_Manager_UC mqtt_uc;
+        public bool _display;
         public string _topic;
 
         public event EventHandler newData;
@@ -36,11 +37,15 @@ namespace MQTT_Manager_jjo
             string txt;
             switch (dataType)
             {
+                case DataType._bytearray:
+                    newData?.Invoke(data, new EventArgs());
+                    break;
+
                 case DataType._boolean:
                     txt = Encoding.Default.GetString(data);
                     bool val_bool = bool.Parse(txt);
                     txt = val_bool.ToString();
-                    _uc.AddToMessageList(txt);
+                    if (_display) _uc.AddToMessageList(txt);
                     newData?.Invoke(val_bool, new EventArgs());
                     break;
 
@@ -48,7 +53,7 @@ namespace MQTT_Manager_jjo
                     txt = Encoding.Default.GetString(data);
                     int val_int = int.Parse(txt);
                     txt = val_int.ToString();
-                    _uc.AddToMessageList(txt);
+                    if (_display) _uc.AddToMessageList(txt);
                     newData?.Invoke(val_int, new EventArgs());
                     break;
 
@@ -56,7 +61,7 @@ namespace MQTT_Manager_jjo
                     txt = Encoding.Default.GetString(data);
                     long val_long = long.Parse(txt);
                     txt = val_long.ToString();
-                    _uc.AddToMessageList(txt);
+                    if (_display) _uc.AddToMessageList(txt);
                     newData?.Invoke(val_long, new EventArgs());
                     break;
 
@@ -64,7 +69,7 @@ namespace MQTT_Manager_jjo
                     txt = Encoding.Default.GetString(data);
                     float val_float = float.Parse(txt);
                     txt = val_float.ToString();
-                    _uc.AddToMessageList(txt);
+                    if (_display) _uc.AddToMessageList(txt);
                     newData?.Invoke(val_float, new EventArgs());
                     break;
 
@@ -72,35 +77,35 @@ namespace MQTT_Manager_jjo
                     txt = Encoding.Default.GetString(data);
                     double val_double = double.Parse(txt);
                     txt = val_double.ToString();
-                    _uc.AddToMessageList(txt);
+                    if (_display) _uc.AddToMessageList(txt);
                     newData?.Invoke(val_double, new EventArgs());
                     break;
 
                 case DataType._string:
                     txt = Encoding.Default.GetString(data);
-                    _uc.AddToMessageList(txt);
+                    if (_display) _uc.AddToMessageList(txt);
                     newData?.Invoke(txt, new EventArgs());
                     break;
 
                 case DataType._image:
                     BitmapImage image0 = ToImage(data);
-                    _uc.DisplayImage(data);
+                    if (_display) _uc.DisplayImage(data);
                     newData?.Invoke(image0, new EventArgs());
                     break;
 
                 case DataType._image_with_metadatas:
                     BitmapImage image1 = ToImage(data);
-                    _uc.DisplayImage(data);
+                    if (_display) _uc.DisplayImage(data);
 
-                    _uc.DisplayMetaData(data);
+                    if (_display) _uc.DisplayMetaData(data);
                     newData?.Invoke(image1, new EventArgs());
                     break;
 
                 case DataType._image_with_json_in_metadata:
                     BitmapImage image2 = ToImage(data);
-                    _uc.DisplayImage(data);
+                    if (_display) _uc.DisplayImage(data);
 
-                    _uc.DisplayJsonFromMetaData(data);
+                    if (_display) _uc.DisplayJsonFromMetaData(data);
                     newData?.Invoke(image2, new EventArgs());
                     break;
 
@@ -109,7 +114,7 @@ namespace MQTT_Manager_jjo
                     txt = vec3[0].ToString() + " ; " +
                           vec3[1].ToString() + " ; " +
                           vec3[2].ToString();
-                    _uc.AddToMessageList(txt);
+                    if (_display) _uc.AddToMessageList(txt);
                     newData?.Invoke(vec3, new EventArgs());
                     break;
 
@@ -119,7 +124,7 @@ namespace MQTT_Manager_jjo
                           vec4[1].ToString() + " ; " +
                           vec4[2].ToString() + " ; " +
                           vec4[3].ToString();
-                    _uc.AddToMessageList(txt);
+                    if (_display) _uc.AddToMessageList(txt);
                     newData?.Invoke(vec4, new EventArgs());
                     break;
 

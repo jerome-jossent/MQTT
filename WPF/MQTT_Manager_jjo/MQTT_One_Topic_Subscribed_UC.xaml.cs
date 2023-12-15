@@ -43,6 +43,11 @@ namespace MQTT_Manager_jjo
         {
             this._objet = objet;
             objet._Link(this);
+            if (!string.IsNullOrEmpty(objet._topic))
+                tbx_topic.Text = objet._topic;
+
+            cbx_datatype.Text = objet.dataType.ToString();
+
             return this;
         }
 
@@ -79,7 +84,7 @@ namespace MQTT_Manager_jjo
             Dispatcher.Invoke(() =>
             {
                 img.Source = ToImage(data);
-                OnPropertyChanged("MaxImageWidth");                
+                OnPropertyChanged("MaxImageWidth");
             });
         }
 

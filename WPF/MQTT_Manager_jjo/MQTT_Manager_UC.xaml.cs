@@ -20,8 +20,8 @@ namespace MQTT_Manager_jjo
     {
         public MQTTnet.Client.IMqttClient mqttClient;
 
-        public event EventHandler connected;
-        public event EventHandler disconnected;
+        public event EventHandler _connected;
+        public event EventHandler _disconnected;
 
         public Dictionary<string, Action<byte[]?>> topics_subscribed;
 
@@ -180,7 +180,7 @@ namespace MQTT_Manager_jjo
         {
             SetStatusConnection(Colors.Green);
             MQTTClient_Subscribes();
-            connected?.Invoke(this, arg);
+            _connected?.Invoke(this, arg);
             return MQTTnet.Internal.CompletedTask.Instance;
         }
 
@@ -192,7 +192,7 @@ namespace MQTT_Manager_jjo
 
             mqttClient.Dispose();
             SetStatusConnection(Colors.Red);
-            disconnected?.Invoke(this, arg);
+            _disconnected?.Invoke(this, arg);
 
             //MQTTClient_Connect();
 

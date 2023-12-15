@@ -10,7 +10,7 @@ namespace MQTT_Manager_jjo
 {
     public class MQTT_Enums
     {
-        public enum DataType { _boolean, _integer, _long, _float, _double, _string, _image, _image_with_metadatas, _image_with_json_in_metadata, _vector3, _vector4}
+        public enum DataType { _bytearray, _boolean, _integer, _long, _float, _double, _string, _image, _image_with_metadatas, _image_with_json_in_metadata, _vector3, _vector4}
 
 
         //public static MQTT_Manager_UC FindChild(DependencyObject parent)
