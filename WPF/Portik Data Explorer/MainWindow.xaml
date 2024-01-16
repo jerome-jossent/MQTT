@@ -1,0 +1,245 @@
+﻿<Window x:Class="Portik_Data_Explorer.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Portik_Data_Explorer"
+        mc:Ignorable="d"        
+        Title="PortiK - DATA Explorer" Height="800" Width="600"
+        Loaded="Window_Loaded"
+        >
+    <Grid Margin="5">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Column="0" Margin="2" Text="Folder" VerticalAlignment="Center" />
+            <TextBox Grid.Column="1" Margin="2" Text="{Binding path, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" VerticalContentAlignment="Center" />
+            <Image Grid.Column="2" Margin="2" Width="25" RenderOptions.BitmapScalingMode="Fant" Source="/Resources/folder.png" MouseDown="SelectFolder_MouseDown" />
+            <Image Grid.Column="3" Margin="2" Width="25" RenderOptions.BitmapScalingMode="Fant" Source="/Resources/refresh.png" MouseDown="SearchDataSet_MouseDown"/>
+        </Grid>
+
+        <Grid Grid.Row="2" Margin="0,5,0,0">
+            <DataGrid ItemsSource="{Binding dataSets}" AutoGenerateColumns="False" GridLinesVisibility="None"
+                      x:Name="dataGrid" SelectedItem="{Binding selectedDataSet}" >
+                <DataGrid.Columns>
+
+                    <!--VOIR-->
+                    <DataGridTemplateColumn Width="22" Header="">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Command="{Binding ExploreFileCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                    CommandParameter="{Binding}" Width="20" Height="20"
+                                    BorderThickness="0" Background="Transparent">
+                                    <Image Grid.Column="2"
+                                        RenderOptions.BitmapScalingMode="Fant" Width="20" 
+                                        Source="/Resources/5128-tOo-Dossierferme.png"
+                                        ToolTip="Open folder"/>
+                                </Button>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <!--Nom-->
+                    <DataGridTemplateColumn Width="Auto" Header="Name">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Nom}" HorizontalAlignment="Left" VerticalAlignment="Center" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <!--GeoImages-->
+                    <DataGridTemplateColumn Width="Auto" Header="GeoImages">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding GeoImages_nbr}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <!--GeoInferences-->
+                    <DataGridTemplateColumn Width="Auto" Header="Inferences">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding GeoInferences_nbr}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                    
+                    <!--GeoObjets-->
+                    <DataGridTemplateColumn Width="Auto" Header="GeoObjets">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding GeoObjets_nbr}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <!--GeoFlips-->
+                    <DataGridTemplateColumn Width="Auto" Header="Flips">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding GeoFlips_nbr}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <!--isVIDE-->
+                    <DataGridTemplateColumn Width="Auto" Header="Empty">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <CheckBox IsChecked="{Binding Vide}" ToolTip="is Empty" 
+                                          IsEnabled="False" HorizontalAlignment="Center" 
+                                          VerticalAlignment="Center"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <!--FolderSize_Mo-->
+                    <DataGridTemplateColumn Width="Auto" Header="Size (Mo)">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding FolderSize_Mo, StringFormat={}{0:### ### ### ### ##0.0}}" HorizontalAlignment="Right"  VerticalAlignment="Center" />
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <!--DELETE-->
+                    <DataGridTemplateColumn Width="22" Header="">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Button Command="{Binding DeleteFolderCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                    CommandParameter="{Binding}" Width="20" Height="20"
+                                    BorderThickness="0" Background="Transparent">
+                                    <Image RenderOptions.BitmapScalingMode="Fant" 
+                                        Source="/Resources/Corbeille.png"
+                                        ToolTip="Delete"/>
+                                </Button>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <Image Grid.Row="2" Width="25" Height="25" RenderOptions.BitmapScalingMode="Fant" Source="/Resources/Corbeille.png" 
+               ToolTip="Delete all selected datatsets"
+               MouseDown="DeleteSelection_MouseDown" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+        </Grid>
+
+        <!--REPLAY DATA-->
+        <Grid Grid.Row="3">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0" Margin="0,5,0,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="auto"/>
+                </Grid.RowDefinitions>
+
+                <!--CONTROLE & INFOS DATASET-->
+                <Grid Grid.Row="0" >
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="auto"/>
+                        <ColumnDefinition Width="auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="auto"/>
+                        <ColumnDefinition Width="auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="auto"/>
+                        <ColumnDefinition Width="auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock  Grid.Column="0" VerticalAlignment="Center" Text="Replay" Margin="5,0" HorizontalAlignment="Left" />
+
+                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+
+                        <Image Width="25" Height="25" Margin="5,0" RenderOptions.BitmapScalingMode="Fant" Source="/Resources/Stop.png" 
+               ToolTip="Replay data"
+               MouseDown="ReplaySelection_STOP_MouseDown" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+
+                        <Image Width="25" Height="25" Margin="5,0" RenderOptions.BitmapScalingMode="Fant" Source="/Resources/Lecture.png" 
+               ToolTip="Stop replay" Name="btn_replay_stop" 
+               MouseDown="ReplaySelection_PLAY_MouseDown" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+
+                        <Image Width="25" Height="25" Margin="5,0" RenderOptions.BitmapScalingMode="Fant" Source="/Resources/Pause.png" 
+               ToolTip="Pause Replay"
+               MouseDown="ReplaySelection_PAUSE_MouseDown" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+
+                        <Image Width="25" Height="25" Margin="5,0" RenderOptions.BitmapScalingMode="Fant" Source="/Resources/Suivant.png" 
+               ToolTip="Next DATA"
+               MouseDown="ReplaySelection_NEXT_MouseDown" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+
+                    </StackPanel>
+
+                    <TextBlock Grid.Column="3" VerticalAlignment="Center" Text="Current" Margin="2,0" />
+                    <TextBlock Grid.Column="4" VerticalAlignment="Center" Margin="2,0"  Text="{Binding selectedDataSet.currenttime, StringFormat={}{0:### ### ### ### ##0.0s}}"/>
+
+                    <TextBlock Grid.Column="6" VerticalAlignment="Center" Text="Experience duration" Margin="2,0" />
+                    <TextBlock Grid.Column="7" VerticalAlignment="Center" Margin="2,0"  Text="{Binding selectedDataSet.duration, StringFormat={}{0:### ### ### ### ##0.0s}}"/>
+                </Grid>
+
+                <Grid Grid.Row="1" Margin="0,5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="auto"/>
+                        <ColumnDefinition Width="auto"/>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="auto"/>
+                        <ColumnDefinition Width="auto"/>     
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Margin="5,0" Text="IP Broker" />
+                    <TextBox Grid.Column="1" Text="{Binding ip_Broker}" MinWidth="100" HorizontalContentAlignment="Center" />
+                    
+                    <TextBlock Grid.Column="3" Margin="5,0" Text="port Broker" />
+                    <TextBox Grid.Column="4" Text="{Binding port_Broker}" PreviewTextInput="TBX_port_Broker_PreviewTextInput" MinWidth="50" HorizontalContentAlignment="Center" />
+
+                    <CheckBox Grid.Column="6" x:Name="convert_geoimage_to_jpeg_and_save_to_disk"
+                              Content="Get a copy to jpg in the same folder"/>
+                </Grid>
+
+                <StackPanel Grid.Row="2" Orientation="Horizontal">
+                    <CheckBox Margin="5" Content="GeoImages" x:Name="ckb_GeoImages" IsChecked="True" IsEnabled="False" Checked="ckb_data_Checked" Unchecked="ckb_data_Checked"/>
+                    <CheckBox Margin="5" Content="Inferences" x:Name="ckb_Inferences" IsChecked="True" IsEnabled="False"  Checked="ckb_data_Checked" Unchecked="ckb_data_Checked"/>
+                    <CheckBox Margin="5" Content="GeoObjets" x:Name="ckb_GeoObjets" IsChecked="True" IsEnabled="False" Checked="ckb_data_Checked" Unchecked="ckb_data_Checked"/>
+                    <CheckBox Margin="5" Content="Flips" x:Name="ckb_Flips" IsChecked="True" IsEnabled="False" Checked="ckb_data_Checked" Unchecked="ckb_data_Checked"/>
+                </StackPanel>
+                
+            </Grid>
+
+            <ProgressBar Grid.Row="2" Grid.ColumnSpan="2" Value="{Binding selectedDataSet.currenttime}" Maximum="{Binding selectedDataSet.duration}" Height="10" Margin="0,5"/>
+
+            <ListView Grid.Row="3" Grid.ColumnSpan="2" SelectionChanged="ListView_SelectionChanged" ItemsSource="{Binding selectedDataSet.fichiers}" SelectedItem="{Binding selectedDataSet.activeFichier}">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse Width="5" Height="5" Fill="{Binding color}" Margin="0,0,5,0"/>
+                            <TextBlock Margin="0,0,15,0" Text="{Binding t_s, StringFormat={}{0:0000.000s}}" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding name}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+
+        </Grid>
+    </Grid>
+</Window>
