@@ -1,0 +1,49 @@
+﻿<Window x:Class="Portik_SpeedMeter.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Portik_SpeedMeter"
+        xmlns:jj="clr-namespace:MQTT_Manager_jjo;assembly=MQTT_Manager_jjo"
+        mc:Ignorable="d"
+        Title="Portik - SpeedMeter" Height="450" Width="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="auto"/>
+        </Grid.RowDefinitions>
+
+        <jj:MQTT_Manager_UC x:Name="mqtt"/>
+
+        <!--<jj:MQTT_One_Topic_Subscribed_UC Grid.Row="1" x:Name="incoming_portik_image_UC"/>-->
+
+        <!--IMAGES-->
+        <Grid Grid.Row="2" >
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+        <Image Grid.Column="0" x:Name="image" />
+        <!--<Image Grid.Column="1" x:Name="imageMATCH" />-->
+            <WpfPlot Grid.Column="1" x:Name="graph" />
+        </Grid>
+
+        <Grid Grid.Row="3">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Label Grid.Column="0" Content="Resolution Y (mm/pixel)"/>
+            <TextBox Grid.Column="1" Text="{Binding resolution_mm_by_pixel, UpdateSourceTrigger=PropertyChanged}"/>
+            <Label Grid.Column="2" Content="Speed Y (m/s)"/>
+            <Label Grid.Column="3" Content="{Binding speed, UpdateSourceTrigger=PropertyChanged}" FontWeight="Bold" />
+
+        </Grid>
+        
+    </Grid>
+</Window>

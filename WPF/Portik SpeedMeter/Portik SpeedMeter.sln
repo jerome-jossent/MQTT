@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.7.34221.43
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Portik SpeedMeter", "Portik SpeedMeter.csproj", "{0C2CF46D-4A1B-42F2-BEF8-662AF2A7D588}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MQTT_Manager_jjo", "..\MQTT_Manager_jjo\MQTT_Manager_jjo.csproj", "{C4EB2265-C503-4365-ACF4-C9C38E65807C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0C2CF46D-4A1B-42F2-BEF8-662AF2A7D588}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0C2CF46D-4A1B-42F2-BEF8-662AF2A7D588}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0C2CF46D-4A1B-42F2-BEF8-662AF2A7D588}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0C2CF46D-4A1B-42F2-BEF8-662AF2A7D588}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C4EB2265-C503-4365-ACF4-C9C38E65807C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C4EB2265-C503-4365-ACF4-C9C38E65807C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C4EB2265-C503-4365-ACF4-C9C38E65807C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C4EB2265-C503-4365-ACF4-C9C38E65807C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E9763630-2099-4955-A1C5-A688CF5BCCFD}
+	EndGlobalSection
+EndGlobal

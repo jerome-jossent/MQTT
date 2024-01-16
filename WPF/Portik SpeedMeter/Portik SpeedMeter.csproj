@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net7.0-windows</TargetFramework>
+    <RootNamespace>Portik_SpeedMeter</RootNamespace>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Google.Protobuf" Version="3.25.1" />
+    <PackageReference Include="MQTTnet" Version="4.3.3.952" />
+    <PackageReference Include="OpenCvSharp4.Windows" Version="4.8.0.20230708" />
+    <PackageReference Include="OpenCvSharp4.WpfExtensions" Version="4.8.0.20230708" />
+    <PackageReference Include="ScottPlot" Version="4.1.69" />
+    <PackageReference Include="ScottPlot.WPF" Version="4.1.69" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MQTT_Manager_jjo\MQTT_Manager_jjo.csproj" />
+  </ItemGroup>
+
+</Project>
