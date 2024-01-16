@@ -23,7 +23,7 @@ namespace MQTT_Manager_jjo
             this.mqtt_uc = mqtt_uc;
         }
 
-        internal void _Link(MQTT_One_Topic_Subscribed_UC mQTT_One_Topic_Subscribed_UC)
+        public void _Link(MQTT_One_Topic_Subscribed_UC mQTT_One_Topic_Subscribed_UC)
         {
             _uc = mQTT_One_Topic_Subscribed_UC;
         }

@@ -23,7 +23,7 @@ namespace MQTT_Manager_jjo
         public event EventHandler _connected;
         public event EventHandler _disconnected;
 
-        public Dictionary<string, Action<byte[]?>> topics_subscribed;
+        public Dictionary<string, Action<byte[]?>> topics_subscribed = new Dictionary<string, Action<byte[]?>>();
 
         string _IP;
         int _port;
