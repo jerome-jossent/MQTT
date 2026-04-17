@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34902.65
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MQTT_Server", "MQTT_Server.csproj", "{2EAA2F94-D04E-4ED1-B4B2-8F115D295FAF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Advise_Common_WPF_v2", "..\Advise_IHM\Advise_Common_WPF_v2\Advise_Common_WPF_v2.csproj", "{02192A69-6591-4BED-87F4-97491ECA11DC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2EAA2F94-D04E-4ED1-B4B2-8F115D295FAF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2EAA2F94-D04E-4ED1-B4B2-8F115D295FAF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2EAA2F94-D04E-4ED1-B4B2-8F115D295FAF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2EAA2F94-D04E-4ED1-B4B2-8F115D295FAF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{02192A69-6591-4BED-87F4-97491ECA11DC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{02192A69-6591-4BED-87F4-97491ECA11DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{02192A69-6591-4BED-87F4-97491ECA11DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{02192A69-6591-4BED-87F4-97491ECA11DC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {499ACDA7-5A90-4E0F-ABC9-BEBF5E8E536A}
+	EndGlobalSection
+EndGlobal

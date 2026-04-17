@@ -1,0 +1,18 @@
+﻿<UserControl x:Class="ObjectExplorer_JJO.TreeViewItem_JSON_UC"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:TreeView_JJO"
+             mc:Ignorable="d"
+             d:DesignHeight="30" d:DesignWidth="200">
+    <StackPanel Orientation="Horizontal" Height="17">
+        <Ellipse x:Name="_elp" Width="5" Height="5" 
+                 Margin="0,0,3,0" 
+                 StrokeThickness="0.5"                 
+                 Fill="Aqua" 
+                 />
+        <TextBlock x:Name="_tbk_header" FontWeight="Bold" Text="header" />
+        <TextBlock x:Name="_tbk_value" Text="value"/>
+    </StackPanel>
+</UserControl>

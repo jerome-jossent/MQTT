@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34902.65
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NumBox_TagExplorer", "NumBox_TagExplorer.csproj", "{97D551C6-D411-49B5-94D3-8EC4C0878A8D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ObjectExplorer_JJO", "..\..\..\Advise\advise-ihm\Advise_IHM\ObjectExplorer_JJO\ObjectExplorer_JJO.csproj", "{1F4EFCE5-3BE2-42E5-8E47-F01543B2A2AD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{97D551C6-D411-49B5-94D3-8EC4C0878A8D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{97D551C6-D411-49B5-94D3-8EC4C0878A8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{97D551C6-D411-49B5-94D3-8EC4C0878A8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{97D551C6-D411-49B5-94D3-8EC4C0878A8D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1F4EFCE5-3BE2-42E5-8E47-F01543B2A2AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1F4EFCE5-3BE2-42E5-8E47-F01543B2A2AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1F4EFCE5-3BE2-42E5-8E47-F01543B2A2AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1F4EFCE5-3BE2-42E5-8E47-F01543B2A2AD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {EC39551B-39AA-4AEB-B3A0-99883927B3BF}
+	EndGlobalSection
+EndGlobal

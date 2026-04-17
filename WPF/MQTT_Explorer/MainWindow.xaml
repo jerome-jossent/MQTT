@@ -1,0 +1,453 @@
+﻿<Window x:Class="MQTT_Explorer.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MQTT_Explorer"
+        
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        xmlns:xcad="http://schemas.xceed.com/wpf/xaml/avalondock"
+            
+        xmlns:Converters="clr-namespace:Converters_JJO;assembly=WPF_Converter"
+                
+        mc:Ignorable="d"
+        Loaded="Window_Loaded" Unloaded="Window_Unloaded"
+        Title="MQTT Explorer JJO" Height="600" Width="1000">
+
+    <Window.Resources>
+        <Style TargetType="ListViewItem">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        </Style>
+
+        <Converters:WPF_Converter_NOT x:Key="conv_not"/>
+
+        <Converters:IntToStringConverter x:Key="conv_int"/>
+
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!--MENU-->
+        <Menu Grid.Row="0" Height="30">
+            <MenuItem Click="Connection_Panel">
+                <MenuItem.Header>
+                    <StackPanel Orientation="Horizontal">
+
+                        <Grid>
+                            <Image MouseDown="img_Disconnection_Click"
+                            Source="/Images/device_connect.png" Height="24" RenderOptions.BitmapScalingMode="Fant" />
+                            <Image MouseDown="img_Connection_Click" Visibility="{Binding _img_connection_visibility}"
+                            Source="/Images/device_disconnect.png" Height="24" RenderOptions.BitmapScalingMode="Fant" />
+                        </Grid>
+                        
+                        <Grid Margin="3,0,0,0">
+                            <Label Background="Green" Margin="0,2,0,2"/>
+                            <Label Background="Red" Margin="0,2,0,2" Visibility="{Binding _img_connection_visibility}"/>
+                            <TextBlock Margin="2,0,2,0" Foreground="White" Text="Connection" VerticalAlignment="Center"/>
+                        </Grid>
+
+                    </StackPanel>
+                </MenuItem.Header>
+            </MenuItem>
+
+            <MenuItem Click="Topics_delete_all">
+                <MenuItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="/Images/Corbeille.png" Width="24" RenderOptions.BitmapScalingMode="Fant"/>
+                        <TextBlock Margin="2,0,0,0" Text="Delete all topics" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </MenuItem.Header>
+            </MenuItem>
+
+            <MenuItem Click="Topics_TimeLine_Refresh">
+                <MenuItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="/Images/refresh.png" Width="24" RenderOptions.BitmapScalingMode="Fant"/>
+                        <TextBlock Margin="2,0,0,0" Text="Refresh timelines" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </MenuItem.Header>
+            </MenuItem>
+
+            <MenuItem>
+                <MenuItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="/Images/save.png" Width="24" RenderOptions.BitmapScalingMode="Fant"/>
+                        <TextBlock Margin="2,0,0,0" Text="Export" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </MenuItem.Header>
+                <MenuItem Click="SaveToFolder">
+                    <MenuItem.Header>
+                        <TextBlock Text="Save to Folder"/>
+                    </MenuItem.Header>
+                </MenuItem>
+                <MenuItem Click="SaveToExcelFile">
+                    <MenuItem.Header>
+                        <TextBlock Text="Save to Excel file"/>
+                    </MenuItem.Header>
+                </MenuItem>
+            </MenuItem>
+
+            <!--PUB-->
+            <MenuItem Click="PublishPanel_ShowOrAdd">
+                <MenuItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="/Images/Upload.png" Width="24" RenderOptions.BitmapScalingMode="Fant"/>
+                        <TextBlock Margin="2,0,0,0" Text="Publish" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </MenuItem.Header>
+            </MenuItem>
+
+            <Separator/>
+
+            <MenuItem ToolTip="up to 200">
+                <MenuItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <Label Content="Max data size by topic (Mo)"/>
+                        <TextBox Text="{Binding datatotalsizemax_mo, Converter={StaticResource conv_int}, 
+    UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True, NotifyOnValidationError=True}" 
+                                 
+                                Height="20" Width="30" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                    </StackPanel>
+                </MenuItem.Header>
+            </MenuItem>
+
+        </Menu>
+
+        <!--CONNECTION-->
+        <Grid Grid.Row="1" Visibility="{Binding _grd_connection_visibility}">
+
+            <StackPanel Orientation="Horizontal">
+
+                <ListView Width="200" Margin="2" MaxHeight="60"
+                          ItemsSource="{Binding _configs}" SelectedItem="{Binding _config}" >
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{Binding name}" Height="18" VerticalAlignment="Center"/>
+                                <Image Grid.Column="1" Width="18" Height="18" Source="/Images/Corbeille.png" 
+                                       RenderOptions.BitmapScalingMode="Fant" MouseDown="Config_Delete_Click"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+
+                <!--Connection & status-->
+                <StackPanel Margin="2">
+                    <Grid>
+                        <Image MouseDown="img_Disconnection_Click"
+                            Source="/Images/device_connect.png" Height="40" RenderOptions.BitmapScalingMode="Fant" />
+                        <Image MouseDown="img_Connection_Click" Visibility="{Binding _img_connection_visibility}"
+                            Source="/Images/device_disconnect.png" Height="40" RenderOptions.BitmapScalingMode="Fant" />
+                    </Grid>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,4,1,0">
+                        <Image MouseDown="Config_new_Click" Source="/Images/new.png" Height="20" RenderOptions.BitmapScalingMode="Fant" />
+                        <Ellipse Height="20" Width="20" Fill="{Binding _ell_connection_color}" Stroke="LightGray" StrokeThickness="2" Margin="5,0,0,0"/>
+                    </StackPanel>
+
+                </StackPanel>
+
+                <!--IP & Port & Id-->
+                <StackPanel Orientation="Vertical">
+                    <StackPanel Orientation="Horizontal" Margin="2" >
+                        <TextBlock Text="IP" Width="30" TextAlignment="Right" Margin="5,0"/>
+                        <TextBox Text="{Binding _mqtt_broker_ip}" Width="130" HorizontalContentAlignment="Center"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal"  Margin="2">
+                        <TextBlock Text="Port" Width="30" TextAlignment="Right" Margin="5,0"/>
+                        <TextBox Text="{Binding _mqtt_broker_port, Converter={StaticResource conv_int}, 
+                            UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True, NotifyOnValidationError=True}" Width="130" HorizontalContentAlignment="Center"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Margin="2" >
+                        <TextBlock Text="Id" Width="30" TextAlignment="Right" Margin="5,0"/>
+                        <TextBox Text="{Binding _mqtt_ID, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Width="130" HorizontalContentAlignment="Center"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <!--LOGIN & MDP-->
+                <StackPanel Orientation="Vertical">
+                    <CheckBox Content="Anonymous" IsChecked="{Binding _mqtt_anonymous}" Margin="71,4,0,3"/>
+
+                    <StackPanel Orientation="Horizontal" Margin="2" IsEnabled="{Binding _mqtt_anonymous, Converter={StaticResource conv_not}}" >
+                        <TextBlock Text="Login" Width="60" TextAlignment="Right" Margin="5,0"/>
+                        <TextBox Text="{Binding _mqtt_login}" Width="200" HorizontalContentAlignment="Center"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal"  Margin="2" IsEnabled="{Binding _mqtt_anonymous, Converter={StaticResource conv_not}}">
+                        <TextBlock Text="Password" Width="60" TextAlignment="Right" Margin="5,0"/>
+                        <TextBox Text="{Binding _mqtt_password}" Width="200" HorizontalContentAlignment="Center"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <!--Save & Load-->
+                <StackPanel Margin="2,2,10,2">
+
+                    <StackPanel Orientation="Horizontal" Margin="2" >
+                        <TextBlock Text="Config name" TextAlignment="Right" Margin="5,0"/>
+                        <TextBox Text="{Binding _config_name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120" HorizontalContentAlignment="Center"/>
+                    </StackPanel>
+
+                    <Image MouseDown="img_config_save_Click" Margin="0,0,0,3" Source="/Images/save.png" Height="30" RenderOptions.BitmapScalingMode="Fant" />
+                    <!--<Image MouseDown="img_config_load_Click"    Source="/Images/load.png" Height="30" RenderOptions.BitmapScalingMode="Fant" />-->
+                </StackPanel>
+
+            </StackPanel>
+
+        </Grid>
+
+        <xcad:DockingManager Grid.Row="2" 
+                             x:Name="_dockManager"
+                             MinHeight="25"
+                           AllowMixedOrientation="True"
+                           BorderBrush="Black"
+                           BorderThickness="0"
+            >
+
+            <xcad:LayoutRoot x:Name="_layoutRoot">
+
+                <!-- Floating Windows Group -->
+                <xcad:LayoutRoot.FloatingWindows/>
+
+                <xcad:LayoutPanel Orientation="Horizontal" x:Name="_layoutPanel">
+
+                    <xcad:LayoutAnchorablePaneGroup Orientation="Vertical" DockWidth="*">
+
+                        <!--TOPICS-->
+                        <xcad:LayoutAnchorablePane>
+                            <xcad:LayoutAnchorable ContentId="topics" Title="Topics" CanClose="False" CanHide="False">
+
+                                <ListView Grid.Column="0" ItemsSource="{Binding _topics, UpdateSourceTrigger=PropertyChanged}" 
+                                          SelectedItem="{Binding _currenttopic}">
+                                    <ListView.ItemContainerStyle>
+                                        <Style TargetType="{x:Type ListViewItem}">
+                                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                            <Setter Property="VerticalContentAlignment" Value="Stretch" />
+                                        </Style>
+                                    </ListView.ItemContainerStyle>
+                                    <ListView.View>
+                                        <GridView>
+
+                                            <!--Delete-->
+                                            <GridViewColumn Header="Del" >
+                                                <GridViewColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <Image Source="/Images/croix.png" RenderOptions.BitmapScalingMode="Fant" Height="15"
+                                                               MouseDown="Topic_delete" ToolTip="Delete topic and datas"
+                                                            />
+                                                    </DataTemplate>
+                                                </GridViewColumn.CellTemplate>
+                                            </GridViewColumn>
+
+                                            <!--TimeLine-->
+                                            <GridViewColumn Width="150">
+                                                <GridViewColumn.Header>
+                                                    <TextBlock Text="Time line" ToolTip="TimeLine"/>
+                                                </GridViewColumn.Header>
+                                                <GridViewColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <Grid>
+                                                            <ItemsControl ItemsSource="{Binding timeline_buttons, UpdateSourceTrigger=PropertyChanged}"
+                          HorizontalAlignment="Stretch"
+                          VerticalAlignment="Stretch">
+                                                                <ItemsControl.ItemsPanel>
+                                                                    <ItemsPanelTemplate>
+                                                                        <UniformGrid Rows="1" />
+                                                                    </ItemsPanelTemplate>
+                                                                </ItemsControl.ItemsPanel>
+
+                                                                <ItemsControl.ItemTemplate>
+                                                                    <DataTemplate>
+                                                                        <Button 
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                HorizontalContentAlignment="Center"
+                                VerticalContentAlignment="Center"
+                                Margin="1">
+                                                                            <Button.Style>
+                                                                                <Style TargetType="Button">
+                                                                                    <Setter Property="MinWidth" Value="30"/>
+                                                                                    <Setter Property="MinHeight" Value="20"/>
+                                                                                </Style>
+                                                                            </Button.Style>
+                                                                        </Button>
+                                                                    </DataTemplate>
+                                                                </ItemsControl.ItemTemplate>
+                                                            </ItemsControl>
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </GridViewColumn.CellTemplate>
+
+
+                                                <!--<ListView ItemsSource="{Binding timeline_buttons}" >
+                                                            -->
+                                                <!--ItemTemplate="{StaticResource ItemWithButtonsTemplate}">-->
+                                                <!--
+                                                            <ListView.ItemContainerStyle>
+                                                                <Style TargetType="ListViewItem">
+                                                                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                                                </Style>
+                                                            </ListView.ItemContainerStyle>
+                                                        </ListView>-->
+
+
+                                                <!--<Image Source="{Binding bitmapSource}" 
+                                                               RenderOptions.BitmapScalingMode="NearestNeighbor"  
+                                                               Height="25"
+                                                               Stretch="Fill"
+                                                               MouseDown="TimeLine_Click"                                                              
+                                                            />-->
+                                            </GridViewColumn>
+
+                                            <!--Follow-->
+                                            <GridViewColumn >
+                                                <GridViewColumn.Header>
+                                                    <TextBlock Text="Follow" ToolTip="Follow data on this topic"/>
+                                                </GridViewColumn.Header>
+                                                <GridViewColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <Image Source="/Images/arrow_right.png" RenderOptions.BitmapScalingMode="Fant" Height="15"
+                                                               MouseDown="Topic_follow" ToolTip="Follow data on this topic"
+                                                            />
+                                                    </DataTemplate>
+                                                </GridViewColumn.CellTemplate>
+                                            </GridViewColumn>
+
+                                            <!--Name-->
+                                            <GridViewColumn Header="Topic name" DisplayMemberBinding="{Binding Path=topic}" Width="300" />
+
+                                            <!--Copy-->
+                                            <GridViewColumn >
+                                                <GridViewColumn.Header>
+                                                    <TextBlock Text="Cpy" ToolTip="Copy topic to clipboard"/>
+                                                </GridViewColumn.Header>
+                                                <GridViewColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <Image Source="/Images/copy_to_clipboard.png" RenderOptions.BitmapScalingMode="Fant" Height="15"
+                                                               MouseDown="Topic_copy" ToolTip="Copy topic to clipboard"
+                                                            />
+                                                    </DataTemplate>
+                                                </GridViewColumn.CellTemplate>
+                                            </GridViewColumn>
+
+                                            <!--Type-->
+                                            <GridViewColumn Header="Type" DisplayMemberBinding="{Binding Path=type}" Width="60"  />
+
+                                            <!--Nombre d'occurences-->
+                                            <GridViewColumn Header="Nbr" DisplayMemberBinding="{Binding Path=occurence}" />
+
+                                            <!--Data Size-->
+                                            <GridViewColumn Header="Data size" >
+                                                <GridViewColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding Path=datasize}" TextAlignment="Right"  />
+                                                    </DataTemplate>
+                                                </GridViewColumn.CellTemplate>
+                                            </GridViewColumn>
+
+                                        </GridView>
+                                    </ListView.View>
+                                </ListView>
+
+                            </xcad:LayoutAnchorable>
+                        </xcad:LayoutAnchorablePane>
+
+                        <!--DATAS-->
+                        <xcad:LayoutAnchorablePane>
+                            <xcad:LayoutAnchorable ContentId="datas" Title="Datas" CanClose="False" CanHide="False">
+
+                                <ListView Grid.Column="0" x:Name="_lv_datas" ItemsSource="{Binding _currenttopic.datas}" 
+                                          SelectedItem="{Binding _currentdata}"
+                                          >
+                                    <!--SelectionChanged="lv_datas_SelectionChanged"-->
+                                    <ListView.View>
+                                        <GridView>
+
+                                            <GridViewColumn >
+                                                <GridViewColumn.Header>
+                                                    <TextBlock Text="Cpy" ToolTip="Copy Texte"/>
+                                                </GridViewColumn.Header>
+                                                <GridViewColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <Image Source="/Images/copy_to_clipboard.png" RenderOptions.BitmapScalingMode="Fant" Height="15"
+                                                               MouseDown="TopicData_copy" ToolTip="Copy texte to clipboard"
+                                                            />
+                                                    </DataTemplate>
+                                                </GridViewColumn.CellTemplate>
+                                            </GridViewColumn>
+
+                                            <GridViewColumn Header="" Width="30">
+                                                <GridViewColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding Path=index}" TextAlignment="Right" />
+                                                    </DataTemplate>
+                                                </GridViewColumn.CellTemplate>
+                                            </GridViewColumn>
+
+                                            <GridViewColumn Header="Date" DisplayMemberBinding="{Binding Path=date, StringFormat={}{0:HH:mm:ss.fff}}" />
+
+                                            <GridViewColumn Header="Size" >
+                                                <GridViewColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding Path=datasize}" TextAlignment="Right" />
+                                                    </DataTemplate>
+                                                </GridViewColumn.CellTemplate>
+                                            </GridViewColumn>
+
+                                            <GridViewColumn Header="Type" DisplayMemberBinding="{Binding Path=type}"  />
+
+                                            <GridViewColumn Header="Del" >
+                                                <GridViewColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <Image Source="/Images/croix.png" RenderOptions.BitmapScalingMode="Fant" Height="15"
+                                                               MouseDown="TopicData_delete" ToolTip="Delete topic and datas"
+                                                            />
+                                                    </DataTemplate>
+                                                </GridViewColumn.CellTemplate>
+                                            </GridViewColumn>
+
+                                            <GridViewColumn >
+                                                <GridViewColumn.Header>
+                                                    <TextBlock Text="New" ToolTip="Open in a dedicated view"/>
+                                                </GridViewColumn.Header>
+                                                <GridViewColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <Image Source="/Images/magnifier.png" RenderOptions.BitmapScalingMode="Fant" Height="15"
+                                                               MouseDown="TopicData_NewView" ToolTip="Open in a dedicated view"
+                                                            />
+                                                    </DataTemplate>
+                                                </GridViewColumn.CellTemplate>
+                                            </GridViewColumn>
+
+                                        </GridView>
+                                    </ListView.View>
+                                </ListView>
+
+                            </xcad:LayoutAnchorable>
+                        </xcad:LayoutAnchorablePane>
+
+                    </xcad:LayoutAnchorablePaneGroup>
+
+                    <!--DATA-->
+                    <xcad:LayoutAnchorablePaneGroup Orientation="Horizontal" DockWidth="*" x:Name="_datas_uc_group"/>
+
+                    <!--PUBLISH-->
+                    <xcad:LayoutAnchorablePaneGroup Orientation="Horizontal" DockWidth="*" x:Name="_publish_group"/>
+
+                </xcad:LayoutPanel>
+
+            </xcad:LayoutRoot>
+        </xcad:DockingManager>
+    </Grid>
+
+</Window>

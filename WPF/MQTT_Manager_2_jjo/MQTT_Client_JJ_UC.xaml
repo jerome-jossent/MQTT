@@ -1,0 +1,78 @@
+﻿<UserControl x:Class="MQTT_Manager_2_jjo.MQTT_Client_JJ_UC"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:MQTT_Manager_2_jjo"
+             mc:Ignorable="d" 
+             d:DesignHeight="100" d:DesignWidth="800">
+    <Grid Height="auto">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="auto"/>
+            <ColumnDefinition Width="auto"/>
+        </Grid.ColumnDefinitions>
+
+        <StackPanel Grid.Column="0" >
+            <Grid Margin="3">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="20"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="50"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="Broker IP" VerticalAlignment="Center" Margin="5,0"/>
+                <ComboBox Grid.Column="1" x:Name="_cbx_ips" IsEditable="True" VerticalContentAlignment="Center" />
+                <Image Grid.Column="2" Height="17" RenderOptions.BitmapScalingMode="Fant" Source="/MQTT_Manager_2_jjo;component/Resources/corbeille grise.png" MouseDown="SelectedIP_Delete_Click"  />
+                <TextBlock Grid.Column="3" Text="Broker port" VerticalAlignment="Center" Margin="5,0" />
+                <TextBox Grid.Column="4" x:Name="_tbx_port" Text="1883" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+            </Grid>
+
+
+            <Grid Margin="3">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="Login" VerticalAlignment="Center" Margin="5,0"/>
+                <TextBox Grid.Column="1" x:Name="_tbx_login" VerticalContentAlignment="Center" />
+                <TextBlock Grid.Column="2" Text="Password" VerticalAlignment="Center" Margin="5,0"/>
+                <TextBox Grid.Column="3"  x:Name="_tbx_password" VerticalContentAlignment="Center"/>
+            </Grid>
+
+            <Grid Margin="3">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="Client ID" VerticalAlignment="Center" Margin="5,0"/>
+                <TextBox Grid.Column="1" x:Name="_tbx_ID" VerticalContentAlignment="Center" />
+            </Grid>
+
+            <Grid Margin="3">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="auto"/>
+                    <ColumnDefinition Width="auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="Last Will topic" VerticalAlignment="Center" Margin="5,0"/>
+                <TextBox Grid.Column="1" x:Name="_tbx_lastwill_topic" VerticalContentAlignment="Center" />
+                <TextBlock Grid.Column="2" Text="Last Will message" VerticalAlignment="Center" Margin="5,0"/>
+                <TextBox Grid.Column="3"  x:Name="_tbx_lastwill_message" VerticalContentAlignment="Center"/>
+                <TextBlock Grid.Column="4" Text="Last Will retain" VerticalAlignment="Center" Margin="5,0"/>
+                <CheckBox Grid.Column="5" x:Name="_ckb_lastwill_retain"  VerticalContentAlignment="Center" />
+            </Grid>
+        </StackPanel>
+
+        <Image Grid.Column="1" Width="50" RenderOptions.BitmapScalingMode="Fant" Source="/MQTT_Manager_2_jjo;component/Resources/device_disconnect.png" MouseDown="Connect_Click" x:Name="btn_connect" />
+        <Image Grid.Column="1" Width="50" RenderOptions.BitmapScalingMode="Fant" Source="/MQTT_Manager_2_jjo;component/Resources/device_connect.png" MouseDown="Disconnect_Click" x:Name="btn_disconnect" Visibility="Hidden"/>
+
+        <Ellipse Grid.Column="2" Margin="5" Width="20" Height="20" x:Name="_ell_connection_status" />
+    </Grid>
+</UserControl>
