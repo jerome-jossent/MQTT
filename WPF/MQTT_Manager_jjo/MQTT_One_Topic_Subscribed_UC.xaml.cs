@@ -21,6 +21,36 @@ namespace MQTT_Manager_jjo
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
         }
 
+
+
+
+
+        public static readonly RoutedEvent _SubscribedEvent = EventManager.RegisterRoutedEvent(
+            name: "Subscribed event",           // Nom de l'événement
+            routingStrategy: RoutingStrategy.Bubble, // Bubble / Tunnel / Direct
+            handlerType: typeof(RoutedEventHandler),
+            ownerType: typeof(MQTT_One_Topic_Subscribed_UC)
+        );
+
+        // Wrapper CLR (rend l'événement visible dans les propriétés)
+        public event RoutedEventHandler _Subscribed
+        {
+            add { AddHandler(_SubscribedEvent, value); }
+            remove { RemoveHandler(_SubscribedEvent, value); }
+        }
+
+        // Méthode pour lever l'événement
+        private void OnSubscribed()
+        {
+            RoutedEventArgs args = new RoutedEventArgs(_SubscribedEvent);
+            RaiseEvent(args);
+        }
+
+
+
+
+
+
         public MQTT_One_Topic_Subscribed _objet;
 
         public MQTT_One_Topic_Subscribed_UC()
@@ -131,6 +161,8 @@ namespace MQTT_Manager_jjo
 
             tbx_topic.IsEnabled = false;
             btn_subscribe.IsEnabled = false;
+
+            OnSubscribed();
         }
 
         void cbx_datatype_SelectionChanged(object sender, SelectionChangedEventArgs e)

@@ -16,7 +16,7 @@ namespace MQTT_Manager_jjo
         public bool _display;
         public string _topic;
 
-        public event EventHandler newData;
+        public event EventHandler<MQTTDataArgs> newData;
 
         public MQTT_One_Topic_Subscribed(MQTT_Manager_UC mqtt_uc)
         {
@@ -28,17 +28,32 @@ namespace MQTT_Manager_jjo
             _uc = mQTT_One_Topic_Subscribed_UC;
         }
 
+        public class MQTTDataArgs : EventArgs
+        {
+            public byte[]? data;
+            public DateTime dateTime;
+
+            public MQTTDataArgs(DateTime dateTime, byte[] data)
+            {
+                this.dateTime = dateTime;
+                this.data = data;
+            }
+        }
+
+
         public void ManageIncomingData(byte[]? data)
         {
             if (data == null) return;
 
             DateTime dateTime = DateTime.Now;
 
+            MQTTDataArgs mqttDA = new MQTTDataArgs(dateTime, data);
+
             string txt;
             switch (dataType)
             {
                 case DataType._bytearray:
-                    newData?.Invoke(data, new EventArgs());
+                    newData?.Invoke(data, mqttDA);
                     break;
 
                 case DataType._boolean:
@@ -46,7 +61,7 @@ namespace MQTT_Manager_jjo
                     bool val_bool = bool.Parse(txt);
                     txt = val_bool.ToString();
                     if (_display) _uc.AddToMessageList(txt);
-                    newData?.Invoke(val_bool, new EventArgs());
+                    newData?.Invoke(val_bool, mqttDA);
                     break;
 
                 case DataType._integer:
@@ -54,7 +69,7 @@ namespace MQTT_Manager_jjo
                     int val_int = int.Parse(txt);
                     txt = val_int.ToString();
                     if (_display) _uc.AddToMessageList(txt);
-                    newData?.Invoke(val_int, new EventArgs());
+                    newData?.Invoke(val_int, mqttDA);
                     break;
 
                 case DataType._long:
@@ -62,7 +77,7 @@ namespace MQTT_Manager_jjo
                     long val_long = long.Parse(txt);
                     txt = val_long.ToString();
                     if (_display) _uc.AddToMessageList(txt);
-                    newData?.Invoke(val_long, new EventArgs());
+                    newData?.Invoke(val_long, mqttDA);
                     break;
 
                 case DataType._float:
@@ -70,7 +85,7 @@ namespace MQTT_Manager_jjo
                     float val_float = float.Parse(txt);
                     txt = val_float.ToString();
                     if (_display) _uc.AddToMessageList(txt);
-                    newData?.Invoke(val_float, new EventArgs());
+                    newData?.Invoke(val_float, mqttDA);
                     break;
 
                 case DataType._double:
@@ -78,19 +93,19 @@ namespace MQTT_Manager_jjo
                     double val_double = double.Parse(txt);
                     txt = val_double.ToString();
                     if (_display) _uc.AddToMessageList(txt);
-                    newData?.Invoke(val_double, new EventArgs());
+                    newData?.Invoke(val_double, mqttDA);
                     break;
 
                 case DataType._string:
                     txt = Encoding.Default.GetString(data);
                     if (_display) _uc.AddToMessageList(txt);
-                    newData?.Invoke(txt, new EventArgs());
+                    newData?.Invoke(txt, mqttDA);
                     break;
 
                 case DataType._image:
                     BitmapImage image0 = ToImage(data);
                     if (_display) _uc.DisplayImage(data);
-                    newData?.Invoke(image0, new EventArgs());
+                    newData?.Invoke(image0, mqttDA);
                     break;
 
                 case DataType._image_with_metadatas:
@@ -98,7 +113,7 @@ namespace MQTT_Manager_jjo
                     if (_display) _uc.DisplayImage(data);
 
                     if (_display) _uc.DisplayMetaData(data);
-                    newData?.Invoke(image1, new EventArgs());
+                    newData?.Invoke(image1, mqttDA);
                     break;
 
                 case DataType._image_with_json_in_metadata:
@@ -106,7 +121,7 @@ namespace MQTT_Manager_jjo
                     if (_display) _uc.DisplayImage(data);
 
                     if (_display) _uc.DisplayJsonFromMetaData(data);
-                    newData?.Invoke(image2, new EventArgs());
+                    newData?.Invoke(image2, mqttDA);
                     break;
 
                 case DataType._vector3:
@@ -115,7 +130,7 @@ namespace MQTT_Manager_jjo
                           vec3[1].ToString() + " ; " +
                           vec3[2].ToString();
                     if (_display) _uc.AddToMessageList(txt);
-                    newData?.Invoke(vec3, new EventArgs());
+                    newData?.Invoke(vec3, mqttDA);
                     break;
 
                 case DataType._vector4:
@@ -125,7 +140,7 @@ namespace MQTT_Manager_jjo
                           vec4[2].ToString() + " ; " +
                           vec4[3].ToString();
                     if (_display) _uc.AddToMessageList(txt);
-                    newData?.Invoke(vec4, new EventArgs());
+                    newData?.Invoke(vec4, mqttDA);
                     break;
 
                 default:

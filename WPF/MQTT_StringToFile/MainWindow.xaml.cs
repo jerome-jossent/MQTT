@@ -15,6 +15,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using static MQTT_Manager_jjo.MQTT_One_Topic_Subscribed;
 
 namespace MQTT_StringToFile
 {
@@ -22,51 +23,144 @@ namespace MQTT_StringToFile
     {
         public event PropertyChangedEventHandler? PropertyChanged;
         protected void OnPropertyChanged([CallerMemberName] string name = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-        }
+            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 
-        MQTT_One_Topic_Subscribed topic;
+        // ─────────────────────────────────────────────
+        //  Logger partagé
+        // ─────────────────────────────────────────────
+        String2Disk _logger = new String2Disk("Logs");
 
-        //veolia/itv/advise/inference_lite
+        // ─────────────────────────────────────────────
+        //  Dictionnaire : topic ──► fichier
+        // ─────────────────────────────────────────────
+        private readonly Dictionary<MQTT_One_Topic_Subscribed, string> _topicFileMap = new();
+
         public MainWindow()
         {
             InitializeComponent();
             DataContext = this;
-
-            topic = new MQTT_One_Topic_Subscribed(mqtt_client);
-
-            topic_subscribed_UC._Link(topic);
-
-            mqtt_client.mqttClient.ConnectedAsync += MqttClient_ConnectedAsync;
+            _baseDirectory = "Logs";
         }
 
-        private Task MqttClient_ConnectedAsync(MQTTnet.Client.MqttClientConnectedEventArgs arg)
+        // ─────────────────────────────────────────────
+        //  Propriétés bindées
+        // ─────────────────────────────────────────────
+        public string _baseDirectory
         {
-            //subscribes
-            mqtt_client.MQTTClient_Subscribes();
-            return null;
-        }
-
-        public string filepath
-        {
-            get => _filepath;
+            get => __baseDirectory;
             set
             {
-                if (_filepath == value) return;
-                _filepath = value;
+                if (__baseDirectory == value) return;
+                __baseDirectory = value;
                 OnPropertyChanged();
             }
         }
-        string _filepath;
+        string __baseDirectory;
 
-        private void _btn_selectfile_Click(object sender, MouseButtonEventArgs e)
+        public bool? _dateTime
         {
-            var fileDialog = new System.Windows.Forms.SaveFileDialog();
-            if (fileDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            get => _logger?._timestamp;
+            set
             {
-                filepath = fileDialog.FileName;
+                if (_logger == null) return;
+                _logger._timestamp = value ?? false;
+                OnPropertyChanged();
             }
         }
+
+        public string _dateTime_format
+        {
+            get => _logger?._dateTime_format;
+            set
+            {
+                if (_logger == null) return;
+                _logger._dateTime_format = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string _separation
+        {
+            get => _logger?._separation;
+            set
+            {
+                if (_logger == null) return;
+                _logger._separation = value;
+                OnPropertyChanged();
+            }
+        }
+
+        // ─────────────────────────────────────────────
+        //  Choisir le répertoire de base
+        // ─────────────────────────────────────────────
+        private void _btn_selectDirectory_Click(object sender, MouseButtonEventArgs e)
+        {
+            var dialog = new System.Windows.Forms.FolderBrowserDialog();
+            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                _baseDirectory = dialog.SelectedPath;
+
+                // Recrée le logger avec le nouveau répertoire
+                _logger?.Dispose();
+                _logger = new String2Disk(_baseDirectory);
+                OnPropertyChanged(nameof(_dateTime));
+                OnPropertyChanged(nameof(_dateTime_format));
+                OnPropertyChanged(nameof(_separation));
+            }
+        }
+
+        // ─────────────────────────────────────────────
+        //  Ajouter un topic
+        // ─────────────────────────────────────────────
+        private void _btn_addTopic_Click(object sender, RoutedEventArgs e)
+        {
+            // 1. Créer le topic
+            var newTopic = new MQTT_One_Topic_Subscribed(mqtt_client);
+
+            // 2. Créer la ligne UC
+            var row = new TopicFileRow(newTopic);
+
+            // 3. Quand un fichier est choisi → enregistrer dans le dictionnaire
+            row.FilePathChanged += (s, filePath) =>
+            {
+                _topicFileMap[newTopic] = filePath;
+            };
+
+            // 4. Quand le topic reçoit des données → écrire dans le bon fichier
+            newTopic.newData += (s, e) =>
+            {
+                if (!_topicFileMap.TryGetValue(newTopic, out string? filePath)) return;
+                if (string.IsNullOrEmpty(filePath)) return;
+
+                MQTTDataArgs args = e as MQTTDataArgs;
+                string stringData = Encoding.Default.GetString(args.data);
+                _logger._WriteToDisk(filePath, stringData);
+            };
+
+            // 5. Bouton ✕ → retirer la ligne
+            row.RemoveRequested += (s, _) => RemoveRow(row, newTopic);
+
+            // 6. Ajouter dans le panel
+            _topicsPanel.Children.Add(row);
+        }
+
+        // ─────────────────────────────────────────────
+        //  Supprimer un topic
+        // ─────────────────────────────────────────────
+        private void RemoveRow(TopicFileRow row, MQTT_One_Topic_Subscribed topic)
+        {
+            _topicFileMap.Remove(topic);
+            _topicsPanel.Children.Remove(row);
+        }
+
+        // ─────────────────────────────────────────────
+        //  Fermeture
+        // ─────────────────────────────────────────────
+        protected override void OnClosed(EventArgs e)
+        {
+            base.OnClosed(e);
+            _logger.Dispose();
+        }
     }
+
 }
